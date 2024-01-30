@@ -11,7 +11,7 @@ char *CheckInit(const char *path) {
     DIR *dir = opendir(path);
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".magit") == 0) {
+        if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".babygit") == 0) {
             closedir(dir);
             return path;
         }
@@ -73,6 +73,21 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
             puts("This is not babygit's repository");
         }
     }
+}
+void GitInit ()
+{
+    char *cwd;
+    char buffer[4096];
+    getcwd (buffer , 4096);
+if (CheckInit(cwd) != NULL)
+{
+    puts("This is already a  babygit repository :)");
+    return;
+}
+else
+{
+
+}
 }
 
 int main(int argc, char *argv[]) {  // Fixed the syntax error here
