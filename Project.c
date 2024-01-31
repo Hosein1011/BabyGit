@@ -20,7 +20,7 @@ char *CheckInit(const char *path) {
     closedir(dir);
     return NULL;
 }
-void CurrentWorkingDirectory(char *cwd)
+char  *CurrentWorkingDirectory()
 {
     char *cwd;      //in voide check beshe
     char buffer[4096];
@@ -202,7 +202,116 @@ else
     fclose(stats);
 
 }
-
+}
+void redo()
+{
+    char *ResetFilePath = (char *)malloc(4096);
+    char *cwd = CurrentWorkingDirectory();
+    char *Repository = CheckInit(cwd);
+    sprintf(ResetFilePath , "%s/.babygit/reset.txt" , Repository);
+    FILE *ResetFile = fopen(ResetFilePath , "w");
+    char *line = (char *)malloc(4096) ; char FileText[1024][4096];
+    int count = 0;
+    while (fgets(line , 4096 , ResetFile) != NULL)
+    {
+        int length = strlen(line) - 1 ; 
+        line[length] = '/0';
+        strcpy( FileText ,line );
+        count += 1;
+    }
+    for( int k = count ; k >= 1 ; k--)
+    {
+        char *Command = (char *)malloc(4096);
+        sprintf(Command , "babygit add %s" , FileText[k]);
+        system(Command);
+    }
+   fclose(ResetFile); //check beshe
+    ResetFile = fopen(ResetFilePath , "w");
+    fclose(ResetFile);
+}
+void Reset( int mode , char *FileName)
+{
+    //Remove file from stage
+    char *cwd = CurrentWorkingDirectory();
+    char *RepositoryPath = CheckInit(cwd);
+    if ( mode = Zero )
+    {
+        char *RemovePath = (char *)malloc(4096) ; char *FullPath = (char *)malloc(4096);
+        char *RelativePath = (char *)malloc(4096);
+        sprintf(FullPath , "%s/%s" , cwd , FileName);
+        strcpy(RelativePath , FullPath);
+        if(!ChekStage(FullPath)) //Check stage tarif nashode
+        {
+            printf("%s is not staged |:/n" , FileName); return;
+        }
+        RelativePath += strlen(RepositoryPath); //Removing newline path
+        sprintf(RemovePath , "rm - %s/.babygit/stage%s" , RepositoryPath , RelativePath );
+        system(RemovePath);
+        char *StatusPath = (char *)malloc(4096);
+        sprintf(StatusPath , "%s/.babygit/status.txt" , RepositoryPath);
+        FILE *StatusFile = fopen(StatusPath , "r");
+        char *Line = (char *)malloc(4096);
+        char FileText[1024][4096]; int index = 0;
+        while (fgets (Line , 4096 , StatusFile))
+        {
+            int length = strlen(Line) - 1;
+            Line[length] = '/0';
+            // Skip the line if it matches the removed file
+            if (!strncmp(Line  ,FullPath, strlen(FullPath))) //lililili
+            {
+            Line[strlen(Line)] = '/n';
+            continue;
+            }
+            Line[strlen(Line)] = '/n';
+        fclose(StatusFile); StatusFile = fopen(StatusPath , "w");
+            strcpy(FileText[index] , Line); index++;
+        }
+        fclose(StatusFile); StatusFile = fopen(StatusPath , "w");
+                // Rewrite the status file without the removed file
+                for (int  i = 0; i < index; i++)
+                {
+                    fprintf(StatusFile , "%s" , FileText[i]);
+                }
+                fclose(StatusFile);
+        }
+        else
+        {
+            char *RemovePath = (char *)malloc(4096);char *Fullpath = (char *)malloc(4096);
+            char *RelativePath = (char *)malloc(4096);
+            sprintf(Fullpath , "%s/%s" , cwd ,FileName);
+            strcpy(RelativePath , Fullpath);
+            if (!CheckSage(Fullpath))
+            {
+                printf("%s is not staged |:/n" , FileName); return;
+            }
+            RelativePath = RelativePath + strlen(RepositoryPath);
+            sprintf(RemovePath , "rm %s/.babygit/status.txt" , RelativePath);
+            system(RemovePath);
+            char *StatusPath = (char *)malloc(4096);
+            sprintf(StatusPath, "%s/.babyit/status.txt", RelativePath);
+            FILE *StatusFile = fopen(StatusPath, "r");
+            char *Line = (char *)malloc(4096); char FileText[1024][4096]; int index = 0;
+            while (fgets(Line , 4096 , StatusFile))
+            {
+                int length = strlen(Line) - 1;
+                Line[length] = '/0';
+                if (!strcmp(Line , Fullpath))
+                {
+                    Line[length + 1] = "/n";
+                    continue;
+                }
+                Line[strlen(Line)] = '\n';
+                strcpy(FileText[index], Line);
+                index++;
+            }
+        fclose(StatusFile);
+        StatusFile = fopen(StatusPath, "w");
+        for (int j = 0; j < index; j++)
+        {
+            fprintf(StatusFile, "%s", FileText[j]);
+        }
+        fclose(StatusFile);
+        }
 }
 
 int main(int argc, char *argv[]) {  // Fixed the syntax error here
