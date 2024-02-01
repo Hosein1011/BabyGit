@@ -20,6 +20,34 @@ char *CheckInit(const char *path) {
     closedir(dir);
     return NULL;
 }
+int CheckSage(char *Path)
+{
+    char *StatusPath = malloc(4096);
+    char *cwd = CurrentWorkingDirectory;
+    char *Repository = CheckInit(cwd);
+    sprintf(StatusPath , "%s/.babygit/status.txt" , Repository);
+    FILE *StatusFile = fopen(StatusPath , "r");
+    char *Line = malloc(4096); char *FolderPath = malloc(4096); char *Temp = malloc(4096);
+    strcpy(Temp , Path);
+    Temp = Temp + strlen(Repository);
+    sprintf(FolderPath , "%s/.babygit/stage%s" , Repository , Temp);
+    DIR *Direction = opendir(FolderPath);
+    while ((fgets(Line , 4096 , StatusPath)) != NULL)
+    {
+        Line[strlen(Line) -1] = '/0';
+        if (!strncmp( Line , Path , strlen(Path)))
+        {
+            Line[strlen(Line)] = '/n';
+            return 1;
+        }
+
+    }
+    if (Direction != NULL)
+    {
+        return 1;
+    }
+    return 0 ; 
+}
 char  *CurrentWorkingDirectory()
 {
     char *cwd;      //in voide check beshe
@@ -39,26 +67,26 @@ char * FindCWD( char * Data)
 }
 void CreatConfig(int IsGlobal, char *mode, char *Data) {
     if (IsGlobal) {
-        char path[] = "/mnt/e/ffproject/"; // path chi bashe ?
+        char path[] = "/mnt/e/ffproject/.babyfitconfig"; // path chi bashe ?
         DIR *Direction = opendir(path);
         if (Direction == NULL) { // Fixed the syntax error here
             mkdir(path, 0777);     // sath dastresie error midad fix kardam
             if (strcmp(mode, "username") != 0) {
-                FILE *username = fopen("/mnt/e/ffproject/username.txt", "w"); // path eslah she
+                FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path eslah she
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
                 fclose(username);
             } else {
-                FILE *email = fopen("/mnt/e/ffproject/email.txt", "w"); // path
+                FILE *email = fopen("/mnt/e/ffproject/.babygitconfig/email.txt", "w"); // path
                 fprintf(email, "%s", Data);  // Fixed the syntax error here
                 fclose(email);
             }
         } else {
             if (strcmp(mode, "email") != 0) {
-                FILE *email = fopen("/mnt/e/ffproject/email.txt", "w"); // path
+                FILE *email = fopen("/mnt/e/ffproject/.babygitconfig/email.txt", "w"); // path
                 fprintf(email, "%s", Data);  // Fixed the syntax error here
                 fclose(email);
             } else {
-                FILE *username = fopen("/mnt/e/ffproject/username.txt", "w"); // path
+                FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
                 fclose(username);
             }
@@ -313,6 +341,187 @@ void Reset( int mode , char *FileName)
         fclose(StatusFile);
         }
 }
+typedef struct 
+{
+    int Id;
+    char Message[72]; 
+    char Branch[100];  
+    char Author[100];
+    char AuthorEmail[100];
+    int prev;
+    int FileCount; 
+    
+} CommitInfo;
+void PerformCommit(int argc , char **argv)
+{
+    char *cwd = CurrentWorkingDirectory();
+    char *RepositoryPath 
+    = CheckInit(cwd);
+    char *UserFilePath = (char *)malloc(4096); char *EmailFilePath = (char *)malloc(4096);
+    sprintf(UserFilePath , "%s/.babygit/user.txt" , RepositoryPath)
+    ;
+    sprintf(EmailFilePath , "%s/.babygit/email.txt" , EmailFilePath);
+    FILE *UserFile = fopen(UserFilePath , "r"); FILE *EmailFile = fopen(EmailFilePath , "r");
+    if ( UserFile == NULL || EmailFile == NULL)
+    {
+        //check global config (faghat bara khoda, kar mide fek konam)
+        char *GlobalUserFilePath = "/mnt/e/ffproject/.babygittconfig/user.txt";
+        char *GlobalEmailFilePath = "/mnt/e/ffproject/.babygitconfig/email.txt";
+        UserFile = fopen(GlobalUserFilePath , "r");
+        EmailFile = fopen(GlobalEmailFilePath , "r");
+        if (UserFile == NULL || EmailFile == NULL)
+        {
+            puts("what the hell are you doing ? set username and email first -_-");
+            return;
+        }
+        //continue?
+        char *UserName = (char *)malloc(4096);
+        char *UserEmail = (char *)malloc(4096);
+        fgets(UserName , 4096 , UserFile) ; fgets(UserEmail , 4096 , EmailFile);
+        UserName[strlen(UserName) - 1] = '\0'; 
+        UserEmail[strlen(UserEmail) - 1] = '\0';
+        fclose(UserEmail); fclose(UserFile);
+
+        char *BranchFilePath = mallo(4096);
+        sprintf(BranchFilePath , "%s/.babygit/commits/branch.txt" , RepositoryPath);
+        FILE *BranchFile =fopen(BranchFilePath , "r");
+        char *BranchName = malloc(4096);
+        fgets(BranchName , 4096 , BranchFile);
+        BranchName[strlen(BranchName) - 1] = '/0';
+        fclose(BranchFile);
+
+        char *IdFilePath = malloc(4096);
+        sprintf (IdFilePath , "%s/.babygit/commits/current-id.txt" , RepositoryPath );
+        FILE *IdFile = fopen(IdFilePath , "r");
+        char *CommitId = malloc(4096);
+        fgets(CommitId , 4096 , IdFile);
+        CommitId[strlen(CommitId) - 1] = "/0"; fclose(IdFile);
+
+        char *PrevIdFilePath = malloc(4096);
+        sprintf(PrevIdFilePath, "%s/.babygit/commits/prev-id.txt", RepositoryPath);
+        FILE *prevIdFile = fopen(PrevIdFilePath, "r");
+        char *prevCommitId = malloc(4096);
+        fgets(prevCommitId, 4096 , prevIdFile);
+        prevCommitId[strlen(prevCommitId) - 1] = '\0'; 
+        fclose(prevIdFile);
+
+         char *StagePath = malloc(4096);
+        sprintf(StagePath, "%s/.magit/stage", RepositoryPath);
+        int FileCount = FileCounter(StagePath); //not made yet
+        if(Filecount = 0) puts("there is nothing we can commit -_-"); return;
+
+        CommitInfo *CommitInfo = malloc(sizeof(CommitInfo));
+        CommitInfo->Id = atoi(CommitId) + 1;
+        CommitInfo->prev = atoi(prevCommitId);
+        CommitInfo->FileCount = FileCount; //add File counter function
+        strcpy(CommitInfo->Branch , BranchName);
+        strcpy(CommitInfo->Message , argv[3]); //nigakona error dared
+        strcpy(CommitInfo->Author , UserName);
+        strcpy(CommitInfo->AuthorEmail , UserEmail);
+        printf("[%d %s] %s\n", CommitInfo->Id, CommitInfo->Message, CommitInfo->Branch);
+
+        char *CommitPath = malloc(4096);
+        sprintf(CommitPath , "%s/.babygit/branch/%s/%d" , RepositoryPath , CommitInfo->Branch);
+        mkdir(CommitPath , 0777);
+
+        char *CommitInfoPath = malloc(4096);
+        if (CommitInfo->Id == 0)
+        {
+            char *StagePath = malloc(4096);
+            sprintf(StagePath , "%s/.babygit/stage" , RepositoryPath);
+            DIR *Direction = opendir(StagePath);
+            struct dirent *entry;
+            while( (entry = readdir(Direction)) != NULL)
+            {
+                if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, ".babygit") == 0) 
+            {
+                continue;
+            }
+            char *Path = malloc(4096);
+            sprintf(Path, "%s/%s", StagePath, entry->d_name);
+
+            char *cpCommand = malloc(4096); 
+             if (entry->d_type == DT_DIR)
+            {
+                sprintf(cpCommand, "cp -r %s %s", Path, CommitPath);
+            } 
+            else if (entry->d_type == DT_REG) 
+            {
+                sprintf(cpCommand, "cp %s %s", Path, CommitPath);
+            }
+            system(cpCommand);
+            }
+        closedir(Direction);
+        }
+    else
+    {
+        char *PrevCommitPath ;
+        sprintf(PrevCommitPath ,"%s/.babygit/branch/%s/%d" , RepositoryPath , CommitInfo->Branch , CommitInfo->prev);
+        DIR *prevDir = opendir(PrevCommitPath);
+        struct dirent *entryPrev;
+        while ((entryPrev = readdir(prevDir)) != NULL)
+        {
+        if (strcmp(entryPrev->d_name, ".") == 0 || strcmp(entryPrev->d_name, "..") == 0 || strcmp(entryPrev->d_name, ".magit") == 0)
+        {
+            continue;
+        }
+        if(entryPrev->d_type == DT_DIR)
+        {
+            char *PathPrev = malloc(4096);
+            sprintf(PathPrev , "%s/%s" , PrevCommitPath , entryPrev->d_name);
+            char *cpCommandPrev = malloc(4096);
+            sprintf(cpCommandPrev , "cp -r %s %s" , PathPrev , CommitPath);
+            system(cpCommandPrev); //hala halat badi
+        }
+        else if (entryPrev->d_type == DT_REG)
+        {
+            char *PathPrev = malloc(4096);
+            sprintf(PathPrev , "%s/%s" , PrevCommitPath , entryPrev->d_name);
+            char *cpCommandPrev = malloc(4096);
+            sprintf(cpCommandPrev , "cp %s %s" , PathPrev , CommitPath);
+            system(cpCommandPrev);
+        }
+        }
+    closedir(prevDir);
+    }
+
+    char *LogPath = malloc(4096);
+    sprintf(LogPath , "%s/.babygit/commits/log.txt" , RepositoryPath);
+    FILE *LogFile = fopen(LogPath , "a");
+    fprintf(LogFile , "%s/n" , CommitInfo->Author);
+    fprintf(LogFile, "%d\n\"%s\"\n%s\n%d\n", CommitInfo->Id, CommitInfo->Message, CommitInfo->Branch, CommitInfo->FileCount); 
+    //add time element if you want
+    fclose(LogFile);
+
+    FILE *PrevFile2 = fopen(PrevIdFilePath , "w");
+    fprintf(PrevFile2 , "%d" , CommitInfo->Id);
+    fclpse(PrevFile2);
+
+    IdFile = fopen(IdFilePath , "w" );
+    fprintf(IdFile , CommitInfo->Id);
+    flose(IdFile);
+
+    prevIdFile = fopen(prevIdFile, "w");  //Repository path ro mitoni bara fahm behtar eslah koni
+    fprintf( prevIdFile , "%d", CommitInfo->Id);
+    fclose(prevIdFile);
+
+    sprintf( CommitInfoPath , "%s/.babygit/branch/%s/info%d.txt" , RepositoryPath , CommitInfo->Branch , CommitInfo->Id);
+    FILE *CommitInfoFile = fopen(CommitInfoPath , "w");
+    fprintf(CommitInfoFile , "%s/n" , CommitInfoPath);
+    fprintf(CommitInfoFile, "%d\n%s\n%s\n%d\n", CommitInfo->Id, CommitInfo->Message, CommitInfo->Branch, CommitInfo->FileCount);
+    fclose(CommitInfoFile);
+
+    chdir(RepositoryPath);
+    chdir(".babygit");
+    system("rm -r stage");
+    mkdir("stage" , 0777);
+    system("rm status.txt && touch status.txt");
+    system("rm add.txt && touch add.txt");
+    system("rm reset.txt && touch reset.txt");
+    return;
+}
+
+
 
 int main(int argc, char *argv[]) {  // Fixed the syntax error here
     if (argc < 2) {
