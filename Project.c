@@ -435,7 +435,7 @@ void PerformCommit(int argc , char **argv)
          char *StagePath = malloc(4096);
         sprintf(StagePath, "%s/.magit/stage", RepositoryPath);
         int FileCount = FileCounter(StagePath); //not made yet
-        if(Filecount = 0) puts("there is nothing we can commit -_-"); return;
+        if(FileCount = 0) puts("there is nothing we can commit -_-"); return;
 
         CommitInfo *CommitInfo = malloc(sizeof(CommitInfo));
         CommitInfo->Id = atoi(CommitId) + 1;
@@ -547,12 +547,165 @@ void PerformCommit(int argc , char **argv)
     system("rm reset.txt && touch reset.txt");
     return;
 }
+}
+void DisplayCommit(int argc , char **argv)
+{
+    char *cwd = CurrentWorkingDirectory();
+    char *RepositoryPath = CheckInit(cwd);
+    char *LogFilePath = malloc(4096); 
+    sprintf(LogFilePath , "%s/.babygit/ommits/log.txt" , RepositoryPath );
+    if (argc = 2)
+    {
+        char CommitLog[1024][4096];
+        FILE *LogFile = fopen(LogFilePath , "r");
+        char *Line = malloc(4096);
+        int CommitCount = 0;
+        while (fgets(Line , 4096 , LogFilePath) != NULL)
+        {
+            strcpy(CommitLog[CommitCount] , Line );
+            CommitCount++;
+        }
+        CommitInfo CommitInfoArray[CommitCount]; //making an array of structs
+            int CommitInfoIndex = 0;
+        for (int i = 0 ; i < CommitCount ; i++)
+        {
+            //i = log index
+            if ( i %  6 == 0)
+            {
+                strcpy(CommitInfoArray[CommitInfoIndex].Author, CommitLog[i]);
+                CommitInfoArray[CommitInfoIndex].Id = atoi(CommitLog[i + 1]);
+                strcpy(CommitInfoArray[CommitInfoIndex].Message, CommitLog[i + 2]);
+                strcpy(CommitInfoArray[CommitInfoIndex].Branch, CommitLog[i + 3]);
+                CommitInfoArray[CommitInfoIndex].FileCount = atoi(CommitLog[i + 4]);
+                CommitInfoIndex++;
+            }
+        }
+        for (int j = CommitInfoIndex - 1 ; CommitInfoIndex >= 0 ; j--)
+        {
+        printf ("Author |: %s" , CommitInfoArray[j].Author);
+        printf ("Commit ID :) %d/n" , CommitInfoArray[j].Id);
+        printf ("Message /: %s" , CommitInfoArray[j].Message);
+        printf ("Branch ): %s" , CommitInfoArray[j].Branch);
+        printf ("File Count :) %d/n" , CommitInfoArray[j].FileCount);
+        }
+    }
+   else if(argc == 4 && !strcmp(argv[2] , '-n')) 
+   {
+    char CommitLog[1024][4096];
+    FILE *LogFile = fopen(LogFilePath , "r");
+    char *Line = malloc(4096);
+    int LogIntryCount = 0;
+    int RequestedEntries = atoi(argv[3]); //niga kon
+    while (fgets(Line ,  4096 , LogFile) != NULL)
+    {
+        strcpy(CommitLog[LogIntryCount] , Line);
+        LogIntryCount++;
+    }
+    CommitInfo Commits[LogIntryCount];
+    int CommitIndex = 0;
+    for(int i = 0 ; i <LogIntryCount ; i++)
+    {
+                if (i % 5 == 0)
+        {
+            strcpy(Commits[CommitIndex].Author, CommitLog[i]);
+            Commits[CommitIndex].Id = atoi(CommitLog[i + 1]);////
+            strcpy(Commits[CommitIndex].Message, CommitLog[i + 2]);
+            strcpy(Commits[CommitIndex].Branch, CommitLog[i + 3]);
+            Commits[CommitIndex].FileCount = atoi(CommitLog[i + 5]);
+            CommitIndex++;
+        }
+   }
+   if(RequestedEntries > CommitIndex) RequestedEntries = CommitIndex;
+       for (int j = CommitIndex - 1; j >= CommitIndex - RequestedEntries; j--)
+    {
+        printf("Author:) %s", Commits[j].Author);
+        printf("Commit ID:/ %d\n", Commits[j].Id);
+        printf("Message:| %s", Commits[j].Message);
+        printf("Branch:( %s\n", Commits[j].Branch);
+        printf("File Count-: %d\n", Commits[j].FileCount);
+        printf("\n");
+
+    }
+   }
+   else if(argc == 4 && !strcmp(argv[2] , "-branch") == 0)
+   {
+    char CommitLog[1024][4096];
+    FILE *LogFile = fopen(LogFilePath , "R");
+    char *CurrentLine = malloc(4096);
+    int NumberOfLines = 0;
+    int n = atoi(argv[2]);
+    while ( (fgets (CurrentLine , 4096 , LogFilePath)) != 0)
+    {
+    strcpy( CommitLog[NumberOfLines] , CurrentLine);
+    NumberOfLines++;
+    }
+    CommitInfo CommitInfoArray[NumberOfLines];
+    int NumberOfCommits = 0;
+    for ( int i = 0 ; i < NumberOfLines ; i++)
+    {
+            strcpy(CommitInfoArray[NumberOfCommits].Author, CommitLog[i]);
+            CommitInfoArray[NumberOfCommits].Id = atoi(CommitLog[i + 1]);
+            strcpy(CommitInfoArray[NumberOfCommits].Message, CommitLog[i + 2]);
+            strcpy(CommitInfoArray[NumberOfCommits].Branch, CommitLog[i + 3]);
+            CommitInfoArray[NumberOfCommits].FileCount = atoi(CommitLog[i + 5]);
+            NumberOfCommits++;
+    }
+            if (n > NumberOfCommits) n = NumberOfCommits;
+             for (int j = NumberOfCommits - 1; j >= NumberOfCommits - n; j--)
+        {
+            printf("author:) %s", CommitInfoArray[j].Author);
+            printf("commit id |: %d\n", CommitInfoArray[j].Id);
+            printf("message /: %s", CommitInfoArray[j].Message);
+            printf("branch ): %s\n", CommitInfoArray[j].Branch);
+            printf("file count-: %d\n", CommitInfoArray[j].FileCount);
+            printf("\n");
+        }
+   }
+    else if (argc == 4 && !strcmp(argv[2], "-author"))
+    {
+        char log[1000][4096];
+        FILE *LogFile = fopen(LogFilePath, "r");
+        char *line = malloc(4096);
+        int i = 0;
+        while (fgets(line, 4096, LogFile) != NULL)
+        {
+            strcpy(log[i], line);
+            i++;
+        }
+        CommitInfo CommitInfoArray[i];
+        int k = 0;
+        for (int j = 0; j < i; j++)
+        {
+            if (j % 5 == 0)
+            {
+                strcpy(CommitInfoArray[k].Author, log[j]);
+                CommitInfoArray[k].Id = atoi(log[j + 1]);
+                strcpy(CommitInfoArray[k].Message, log[j + 2]);
+                strcpy(CommitInfoArray[k].Branch, log[j + 3]);
+                CommitInfoArray[k].FileCount = atoi(log[j + 5]);
+                k++;
+            }
+        }
+        for (int j = k - 1; j >= 0; j--)
+        {
+            
+            if (!strncmp(CommitInfoArray[j].Author, argv[3], strlen(argv[3])))
+            {
+                printf("author:) %s", CommitInfoArray[j].Author);
+                printf("commit id|: %d\n", CommitInfoArray[j].Id);
+                printf("message:() %s", CommitInfoArray[j].Message);
+                printf("branch:/ %s", CommitInfoArray[j].Branch);
+                printf("file count-: %d\n", CommitInfoArray[j].FileCount);
+                printf("\n");
+            }
+        }           //debug shode ?
+    }
 
 
-
+}
 int main(int argc, char *argv[]) {  // Fixed the syntax error here
     if (argc < 2) {
-        fprintf(stdout, "please enter a valid command");
+        fprintf(stdout, "please enter a valid Command");
         return 1;
     }
 
