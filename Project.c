@@ -48,6 +48,33 @@ int CheckSage(char *Path)
     }
     return 0 ; 
 }
+int FileCounter ( char * Path)
+{
+    int count = 0 ;
+    struct dirent *fp;
+    DIR *Direction = opendir(Path);
+    while ((fp = readdir(Direction)) != NULL)
+    {
+        if (strcmp(fp->d_name , ".d") == 0 || strcmp(fp->d_name , ".." || strcmp(fp->d_name , ".babygit")))
+        {
+            continue;
+        }
+        if (fp->d_type == DT_REG)
+        {
+            count++;
+        }
+        else if (fp->d_type == DT_DIR)
+        {
+            char *Path2 = malloc(4096);
+            sprintf(Path2 , "%s/%s" , Path , fp->d_name);
+            count += FileCounter(Path2);
+        }
+        return count;
+
+    }
+
+
+}
 char  *CurrentWorkingDirectory()
 {
     char *cwd;      //in voide check beshe
