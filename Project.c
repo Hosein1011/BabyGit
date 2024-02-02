@@ -23,7 +23,9 @@ char *CheckInit(const char *path) {
 int CheckSage(char *Path)
 {
     char *StatusPath = malloc(4096);
-    char *cwd = CurrentWorkingDirectory;
+    char *cwd = malloc(4096);
+    char buffer[4096];
+    cwd = getcwd(buffer , 4096);
     char *Repository = CheckInit(cwd);
     sprintf(StatusPath , "%s/.babygit/status.txt" , Repository);
     FILE *StatusFile = fopen(StatusPath , "r");
@@ -55,7 +57,7 @@ int FileCounter ( char * Path)
     DIR *Direction = opendir(Path);
     while ((fp = readdir(Direction)) != NULL)
     {
-        if (strcmp(fp->d_name , ".d") == 0 || strcmp(fp->d_name , ".." || strcmp(fp->d_name , ".babygit")))
+        if (strcmp(fp->d_name , ".d") == 0 || strcmp(fp->d_name , "..") ==0 || strcmp(fp->d_name , ".babygit") ==0)
         {
             continue;
         }
@@ -158,13 +160,13 @@ if (CheckInit(cwd) != NULL)
 }
 else
 {
-    mkdir(".babygit" , "0777");
+    mkdir(".babygit" , 0777);
     //mkdir(".babygit/branch", 0777);
     //mkdir(".babygit/branch/master", 0777);
-    //mkdir(".babygit/commits", 0777);
-    //mkdir(".babygit/stage", 0777);
-    //fopen(".babygit/status.txt", "w");
-    //fopen(".babygit/branch/master/reset.txt", "w");
+    mkdir(".babygit/commits", 0777);
+    mkdir(".babygit/stage", 0777);
+    fopen(".babygit/status.txt", "w");
+    fopen(".babygit/branch/master/reset.txt", "w");
     return;
 }
 }
@@ -181,7 +183,7 @@ void GitAdd(int mode , char *Data)
     {
         char *NewPath = (char *)malloc(4096);
         NewPath = FindCWD(Data);
-        if (NewPath[0] = "/") NewPath += 1;
+        if (NewPath[0] == "/") NewPath += 1;
         chdir("/"); chdir(Repository); //chdir(".babygit/stage")
         mkdir(NewPath , 0777); chdir(cwd);
         struct dirent *fp ;
@@ -744,6 +746,7 @@ void DisplayCommit(int argc , char **argv)
     }
 
 }
+
 int main(int argc, char *argv[]) 
 {  // Fixed the syntax error here
     if (!strcmp(argv[1] , "config"))
@@ -830,7 +833,7 @@ int main(int argc, char *argv[])
                 if (argc <= 3)
                 {
                     puts("hey you ! enter your command correctly");
-                    return 0;           //add n
+                    return 0;           //add n not add yet
                 }
                 int a = atoi(argv[3]);
                 addn(a);
@@ -845,9 +848,9 @@ int main(int argc, char *argv[])
 
                 for (int i = 3; i < argc; i++)
                 {
-                    char *abspath = malloc(4096);
-                    sprintf(abspath, "%s/%s", cwd, argv[i]);
-                    if (CheckStage(abspath))
+                    char *absPath = malloc(4096);
+                    sprintf(absPath, "%s/%s", cwd, argv[i]);
+                    if (CheckStage(absPath))
                     {
                         // delete from stage folder
                         char *path = malloc(4096);
@@ -856,12 +859,10 @@ int main(int argc, char *argv[])
                         sprintf(rm_path, "rm -r %s/.babygit/stage%s", Repository, path);
                         system(rm_path);
                     }
-                    char tmp[4096];
-                    strcpy(tmp, argv[i]);
+                    char TempPath[4096];
+                    strcpy(TempPath, argv[i]);
                     char *x = changedir(argv[i]);
-                    char *newcwd = malloc(4096);
-                    char buffer[4096];
-                    newcwd = getcwd(buffer, 4096);
+                    char *newcwd = CurrentWorkingDirectory();
                     if (strcmp(Repository, newcwd))
                     {
                         char *path = malloc(4096);
@@ -869,7 +870,7 @@ int main(int argc, char *argv[])
                         StageFolder(path);
                     }
                     add(FileDir(x), changedir(x));
-                    fprintf(AddFile, "%s ", tmp);
+                    fprintf(AddFile, "%s ", TempPath);
                     chdir(cwd);
                 }
                 fprintf(AddFile, "\n");
@@ -879,11 +880,11 @@ int main(int argc, char *argv[])
             {
                 for (int i = 2; i < argc; i++)
                 {
-                    char tmp[4096];
-                    strcpy(tmp, argv[i]);
-                    char *abspath = malloc(4096);
-                    sprintf(abspath, "%s/%s", cwd, argv[i]);
-                    if (CheckStage(abspath))
+                    char TempPath[4096];
+                    strcpy(TempPath, argv[i]);
+                    char *absPath = malloc(4096);
+                    sprintf(absPath, "%s/%s", cwd, argv[i]);
+                    if (CheckStage(absPath))
                     {
                         // delete from stage folder
                         char *path = malloc(4096);
@@ -902,7 +903,7 @@ int main(int argc, char *argv[])
                         path = FindPath(argv[2]);
                         StageFolder(path);
                     }
-                    fprintf(AddFile, "%s ", tmp);
+                    fprintf(AddFile, "%s ", TempPath);
                     add(FileDir(x), x);
                     chdir(cwd);
                 }
@@ -912,9 +913,9 @@ int main(int argc, char *argv[])
         }
         else if (!strcmp(argv[1], "reset"))
         {
-            char *resetpath = malloc(4096);
-            sprintf(resetpath, "%s/.babygit/reset.txt", Repository);
-            FILE *resetfile = fopen(resetpath, "a");
+            char *ResetPath = malloc(4096);
+            sprintf(ResetPath, "%s/.babygit/reset.txt", Repository);
+            FILE *resetfile = fopen(ResetPath, "a");
             if (argc <= 2)
             {
                 puts("hey you ! enter your command correctly");
@@ -928,20 +929,20 @@ int main(int argc, char *argv[])
             {
                 for (int i = 3; i < argc; i++)
                 {
-                    char tmp[4096];
-                    strcpy(tmp, argv[i]);
+                    char TempPath[4096];
+                    strcpy(TempPath, argv[i]);
                     char *x = changedir(argv[i]);
                     char *newcwd = malloc(4096);
                     char buffer[4096];
                     newcwd = getcwd(buffer, 4096);
-                    char *abspath = malloc(4096);
-                    sprintf(abspath, "%s/%s", newcwd, x);
-                    if (!CheckStage(abspath))
+                    char *absPath = malloc(4096);
+                    sprintf(absPath, "%s/%s", newcwd, x);
+                    if (!CheckStage(absPath))
                     {
                         printf("%s is not staged\n", x);
                         continue;
                     }
-                    fprintf(resetfile, "%s ", tmp);
+                    fprintf(resetfile, "%s ", TempPath);
                     reset(FileDir(x), x);
                     chdir(cwd);
                 }
@@ -952,20 +953,20 @@ int main(int argc, char *argv[])
             {
                 for (int i = 2; i < argc; i++)
                 {
-                    char tmp[4096];
-                    strcpy(tmp, argv[i]);
+                    char TempPath[4096];
+                    strcpy(TempPath, argv[i]);
                     char *x = changedir(argv[i]);
                     char *newcwd = malloc(4096);
                     char buffer[4096];
                     newcwd = getcwd(buffer, 4096);
-                    char *abspath = malloc(4096);
-                    sprintf(abspath, "%s/%s", newcwd, x);
-                    if (!CheckStage(abspath))
+                    char *absPath = malloc(4096);
+                    sprintf(absPath, "%s/%s", newcwd, x);
+                    if (!CheckStage(absPath))
                     {
                         printf("%s is not staged\n", x);
                         continue;
                     }
-                    fprintf(resetfile, "%s ", tmp);
+                    fprintf(resetfile, "%s ", TempPath);
                     reset(FileDir(x), x);
                     chdir(cwd);
                 }
@@ -1005,7 +1006,7 @@ int main(int argc, char *argv[])
         }
         else if (!strcmp(argv[1], "branch"))
         {
-            branch(argc, argv);
+            branch(argc, argv); //lilil
         }
         else
         {
