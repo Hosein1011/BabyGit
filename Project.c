@@ -119,7 +119,7 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
             }
         }
         closedir(Direction);
-        return;  // ?
+        return;  
     } else {
         char *cwd;
         char buffer[4096];
@@ -132,12 +132,12 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
             strcat(path, "/.babygit");
             if (strcmp(mode, "username") != 0) {
                 strcat(path, "/username.txt");
-                FILE *prevConfig = fopen(path, "w");  // path.txt nis ?
+                FILE *prevConfig = fopen(path, "w");  
                 fprintf(prevConfig, "%s", Data);     // Fixed the syntax error here
                 fclose(prevConfig);
             } else {
                 strcat(path, "/email.txt");
-                FILE *prevConfig = fopen(path, "w");  // path.txt?
+                FILE *prevConfig = fopen(path, "w"); 
                 fprintf(prevConfig, "%s", Data);     // Fixed the syntax error here
                 fclose(prevConfig);
             }
@@ -433,7 +433,7 @@ void PerformCommit(int argc , char **argv)
         fclose(prevIdFile);
 
          char *StagePath = malloc(4096);
-        sprintf(StagePath, "%s/.magit/stage", RepositoryPath);
+        sprintf(StagePath, "%s/.babygit/stage", RepositoryPath);
         int FileCount = FileCounter(StagePath); //not made yet
         if(FileCount = 0) puts("there is nothing we can commit -_-"); return;
 
@@ -488,7 +488,7 @@ void PerformCommit(int argc , char **argv)
         struct dirent *entryPrev;
         while ((entryPrev = readdir(prevDir)) != NULL)
         {
-        if (strcmp(entryPrev->d_name, ".") == 0 || strcmp(entryPrev->d_name, "..") == 0 || strcmp(entryPrev->d_name, ".magit") == 0)
+        if (strcmp(entryPrev->d_name, ".") == 0 || strcmp(entryPrev->d_name, "..") == 0 || strcmp(entryPrev->d_name, ".babygit") == 0)
         {
             continue;
         }
@@ -700,14 +700,319 @@ void DisplayCommit(int argc , char **argv)
             }
         }           //debug shode ?
     }
-
-
-}
-int main(int argc, char *argv[]) {  // Fixed the syntax error here
-    if (argc < 2) {
-        fprintf(stdout, "please enter a valid Command");
-        return 1;
+        else if (argc == 5 && !strcmp(argv[2], "-since"))
+    {
+        char log[1024][4096];
+        FILE *FileLog = fopen(LogFilePath, "r");
+        char *Line = malloc(4096);
+        int i = 0;
+        int n = atoi(argv[3]);
+        while (fgets(Line, 4096, FileLog) != NULL)
+        {
+            strcpy(log[i], Line);
+            i++;
+        }
+        CommitInfo Commit[i];
+        int k = 0;
+        for (int j = 0; j < i; j++)
+        {
+            if (j % 5 == 0)
+            {
+                strcpy(Commit[k].Author, log[j]);
+                Commit[k].Id = atoi(log[j + 1]);
+                strcpy(Commit[k].Message, log[j + 2]);
+                strcpy(Commit[k].Branch, log[j + 3]);
+                Commit[k].FileCount = atoi(log[j + 5]);
+                k++;
+            }
+        }
+        if (n > k)
+        {
+            n = k;
+        }
+        for (int j = k - 1; j >= k - n; j--)
+        {
+            {
+                printf("author -: %s", Commit[j].Author);
+                printf(" Commit /: id: %d\n", Commit[j].Id);
+                printf("message:| %s", Commit[j].Message);
+                printf("branch:) %s", Commit[j].Branch);
+                printf("file count): %d\n", Commit[j].Branch);
+                printf("\n");
+            }
+        }
     }
 
+}
+int main(int argc, char *argv[]) 
+{  // Fixed the syntax error here
+    if (!strcmp(argv[1] , "config"))
+        {
+            if(argc < 4) //lili
+                {
+                    puts("what the hell are you doing ? enter a valid command");
+                    return 0;
+                }
+            if(!strcmp(argv[2] , "--global"))
+                {
+                    if(!strcmp(argv[3] , "username"))
+                        {
+                            CreatConfig(1 , argv[3] , argv[4]);
+                        }
+                    else if(!strcmp(argv[2] , "useremail"))
+                        {
+                             CreatConfig(1 , argv[3] , argv[4]);
+                        }
+                    else
+                        {
+                            puts("hey you ! enter your command correctly");
+                            return 0;
+                        }
+                }
+    
+            else
+                {
+                    if (!strcmp(argv[2] , "username"))
+                        {
+                            CreatConfig(0 , argv[2] , argv[3]);
+                        }
+                    else if (!strcmp(argv[2] , "useremail"))
+                        {
+                            CreatConfig(0 , argv[2] , argv[3]);
+                        }
+                    else
+                        {
+                            puts("hey you ! enter your command correctly");
+                            return 0;
+                        }
+                }        
+
+        
+    
+             return 0;
+        }
+        
+    else if (!strcmp(argv[1], "init"))
+    {
+        if (argc != 2)
+        {
+            puts("hey you ! enter your command correctly");
+            return 0;
+        }
+        init();
+        return 0;
+    }
+    else
+    {
+        char *cwd = CurrentWorkingDirectory();
+        char *Repository = CheckInit(cwd);
+        if (Repository == NULL)
+        {
+            puts("This is not a babygit repository");
+            return 0;
+        }
+        else if (!strcmp(argv[1], "add"))
+        {
+            char *AddPath = malloc(4096);
+            sprintf(AddPath, "%s/.babygit/add.txt", Repository);
+            FILE *AddFile = fopen(AddPath, "a");
+            if (argc <= 2)
+            {
+                puts("hey you ! enter your command correctly");
+                return 0;
+            }
+            if (!strcmp(argv[2], "-redo"))
+            {
+                redo();
+            }
+            else if (!strcmp(argv[2], "-n"))
+            {
+                if (argc <= 3)
+                {
+                    puts("hey you ! enter your command correctly");
+                    return 0;           //add n
+                }
+                int a = atoi(argv[3]);
+                addn(a);
+            }
+            else if (!strcmp(argv[2], "-f"))
+            {
+                if (argc <= 3)
+                {
+                    puts("hey you ! enter your command correctly");
+                    return 0;
+                }
+
+                for (int i = 3; i < argc; i++)
+                {
+                    char *abspath = malloc(4096);
+                    sprintf(abspath, "%s/%s", cwd, argv[i]);
+                    if (CheckStage(abspath))
+                    {
+                        // delete from stage folder
+                        char *path = malloc(4096);
+                        path = FindPath(argv[2]);
+                        char *rm_path = malloc(4096);
+                        sprintf(rm_path, "rm -r %s/.babygit/stage%s", Repository, path);
+                        system(rm_path);
+                    }
+                    char tmp[4096];
+                    strcpy(tmp, argv[i]);
+                    char *x = changedir(argv[i]);
+                    char *newcwd = malloc(4096);
+                    char buffer[4096];
+                    newcwd = getcwd(buffer, 4096);
+                    if (strcmp(Repository, newcwd))
+                    {
+                        char *path = malloc(4096);
+                        path = FindPath(argv[2]);
+                        StageFolder(path);
+                    }
+                    add(FileDir(x), changedir(x));
+                    fprintf(AddFile, "%s ", tmp);
+                    chdir(cwd);
+                }
+                fprintf(AddFile, "\n");
+                return 0;
+            }
+            else
+            {
+                for (int i = 2; i < argc; i++)
+                {
+                    char tmp[4096];
+                    strcpy(tmp, argv[i]);
+                    char *abspath = malloc(4096);
+                    sprintf(abspath, "%s/%s", cwd, argv[i]);
+                    if (CheckStage(abspath))
+                    {
+                        // delete from stage folder
+                        char *path = malloc(4096);
+                        path = FindPath(argv[2]);
+                        char *rm_path = malloc(4096);
+                        sprintf(rm_path, "rm -r %s/.babygit/stage%s", Repository, path);
+                        system(rm_path);
+                    }
+                    char *x = changedir(argv[i]);
+                    char *newcwd = malloc(4096);
+                    char buffer[4096];
+                    newcwd = getcwd(buffer, 4096);
+                    if (strcmp(Repository, newcwd))
+                    {
+                        char *path = malloc(4096);
+                        path = FindPath(argv[2]);
+                        StageFolder(path);
+                    }
+                    fprintf(AddFile, "%s ", tmp);
+                    add(FileDir(x), x);
+                    chdir(cwd);
+                }
+                fprintf(AddFile, "\n");
+                return 0;
+            }
+        }
+        else if (!strcmp(argv[1], "reset"))
+        {
+            char *resetpath = malloc(4096);
+            sprintf(resetpath, "%s/.babygit/reset.txt", Repository);
+            FILE *resetfile = fopen(resetpath, "a");
+            if (argc <= 2)
+            {
+                puts("hey you ! enter your command correctly");
+                return 0;
+            }
+            if (!strcmp(argv[2], "-undo"))
+            {
+                undo();
+            }
+            else if (!strcmp(argv[2], "-f"))
+            {
+                for (int i = 3; i < argc; i++)
+                {
+                    char tmp[4096];
+                    strcpy(tmp, argv[i]);
+                    char *x = changedir(argv[i]);
+                    char *newcwd = malloc(4096);
+                    char buffer[4096];
+                    newcwd = getcwd(buffer, 4096);
+                    char *abspath = malloc(4096);
+                    sprintf(abspath, "%s/%s", newcwd, x);
+                    if (!CheckStage(abspath))
+                    {
+                        printf("%s is not staged\n", x);
+                        continue;
+                    }
+                    fprintf(resetfile, "%s ", tmp);
+                    reset(FileDir(x), x);
+                    chdir(cwd);
+                }
+                fprintf(resetfile, "\n");
+                return 0;
+            }
+            else
+            {
+                for (int i = 2; i < argc; i++)
+                {
+                    char tmp[4096];
+                    strcpy(tmp, argv[i]);
+                    char *x = changedir(argv[i]);
+                    char *newcwd = malloc(4096);
+                    char buffer[4096];
+                    newcwd = getcwd(buffer, 4096);
+                    char *abspath = malloc(4096);
+                    sprintf(abspath, "%s/%s", newcwd, x);
+                    if (!CheckStage(abspath))
+                    {
+                        printf("%s is not staged\n", x);
+                        continue;
+                    }
+                    fprintf(resetfile, "%s ", tmp);
+                    reset(FileDir(x), x);
+                    chdir(cwd);
+                }
+                fprintf(resetfile, "\n");
+                return 0;
+            }
+        }
+        else if (!strcmp(argv[1], "commit"))
+        {
+            if (!strcmp(argv[2], "-m"))
+            {
+                if (argc <= 3)
+                {
+                    puts("hey you ! enter your command correctly");
+                    return 0;
+                }
+                if (strlen(argv[3]) > 72)
+                {
+                    puts("commit message must be less than 72 characters");
+                    return 0;
+                }
+                commit(argc, argv);
+            }
+            else
+            {
+                puts("hey you ! enter your command correctly");
+                return 0;
+            }
+        }
+        else if (!strcmp(argv[1], "log"))
+        {
+            logg(argc, argv);
+        }
+        else if (!strcmp(argv[1], "checkout"))
+        {
+            checkout(argc, argv);
+        }
+        else if (!strcmp(argv[1], "branch"))
+        {
+            branch(argc, argv);
+        }
+        else
+        {
+            puts("hey you ! enter your command correctly");
+            return 0;
+
+        }
+    }
     return 0;
 }
