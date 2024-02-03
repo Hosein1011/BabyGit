@@ -30,14 +30,6 @@ void DisplayCommit(int argc , char **argv);
 
 
 
-
-
-
-
-
-
-
-
 char *CheckInit(const char *path) {
     DIR *dir = opendir(path);
     struct dirent *entry;
@@ -849,8 +841,7 @@ int main(int argc, char *argv[])
 {  // Fixed the syntax error here
     if (!strcmp(argv[1] , "config"))
         {
-            if(argc < 4) //lili
-                {
+        if (argc != 4 && argc != 5)                {
                     puts("what the hell are you doing ? enter a valid command");
                     return 0;
                 }
