@@ -8,6 +8,36 @@
 #include <sys/types.h>
 #define True 1
 #define Zero 0
+
+char *CheckInit(const char *path);
+int CheckSage(char *Path);
+int FileDir(char *path);
+int FileCounter ( char * Path);
+char  *CurrentWorkingDirectory();
+char * FindCWD( char * Data);
+char *ChangeDir(char *path);
+void StageFolder(char *path);
+void CreatConfig(int IsGlobal, char *mode, char *Data);
+void GitInit ();
+void GitAdd(int mode , char *Data);
+void redo();
+void Reset( int mode , char *FileName);
+void PerformCommit(int argc , char **argv);
+void DisplayCommit(int argc , char **argv);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 char *CheckInit(const char *path) {
     DIR *dir = opendir(path);
     struct dirent *entry;
@@ -49,6 +79,23 @@ int CheckSage(char *Path)
         return 1;
     }
     return 0 ; 
+}
+int FileDir(char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    if (S_ISREG(path_stat.st_mode))
+    {
+        return 1;
+    }
+    else if (S_ISDIR(path_stat.st_mode))
+    {
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
 }
 int FileCounter ( char * Path)
 {
@@ -94,13 +141,51 @@ char * FindCWD( char * Data)
     sprintf(fcwd , "%s%s" , fcwd , Data);//
     return fcwd ;
 }
+char *ChangeDir(char *path)
+{
+    // take a directory and change directory to parent of it and tokenize the last part of path and return it
+    char *LastSlash = strrchr(path, '/');
+    if (LastSlash == NULL)
+    {
+        return path;
+    }
+    *LastSlash = '\0';
+    char *Token = strtok(path, "/");
+    while (Token != NULL)
+    {
+        chdir(Token);
+        Token = strtok(NULL, "/");
+    }
+    return LastSlash + 1;
+}
+void StageFolder(char *path)
+{
+    char NewPath[4096];
+    strcpy(NewPath, path);
+    char *cwd = CurrentWorkingDirectory();
+    char *Repository = CheckInit(cwd);
+    char *loc = strrchr(NewPath, '/');
+    *loc = '\0';
+    char *token = strtok(NewPath, "/");
+    chdir("/");
+    chdir(Repository);
+    chdir("./stage");
+    while (token != NULL)
+    {
+        mkdir(token, 0777);
+        chdir(token);
+        token = strtok(NULL, "/");
+    }
+    chdir(cwd);
+}
 void CreatConfig(int IsGlobal, char *mode, char *Data) {
-    if (IsGlobal) {
+    if (IsGlobal) 
+    {
         char path[] = "/mnt/e/ffproject/.babyfitconfig"; // path chi bashe ?
         DIR *Direction = opendir(path);
         if (Direction == NULL) { // Fixed the syntax error here
             mkdir(path, 0777);     // sath dastresie error midad fix kardam
-            if (strcmp(mode, "username") != 0) {
+            if (strcmp(mode, "user.name") != 0) {
                 FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path eslah she
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
                 fclose(username);
@@ -110,7 +195,7 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
                 fclose(email);
             }
         } else {
-            if (strcmp(mode, "email") != 0) {
+            if (strcmp(mode, "user.email") != 0) {
                 FILE *email = fopen("/mnt/e/ffproject/.babygitconfig/email.txt", "w"); // path
                 fprintf(email, "%s", Data);  // Fixed the syntax error here
                 fclose(email);
@@ -122,7 +207,9 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
         }
         closedir(Direction);
         return;  
-    } else {
+    } 
+    else 
+    {
         char *cwd;
         char buffer[4096];
         cwd = getcwd(buffer, 4096);
@@ -132,12 +219,15 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
 
         if (path == NULL) {  // Fixed the syntax error here
             strcat(path, "/.babygit");
-            if (strcmp(mode, "username") != 0) {
+            if (strcmp(mode, "username") != 0) 
+            {
                 strcat(path, "/username.txt");
                 FILE *prevConfig = fopen(path, "w");  
                 fprintf(prevConfig, "%s", Data);     // Fixed the syntax error here
                 fclose(prevConfig);
-            } else {
+            } 
+            else
+            {
                 strcat(path, "/email.txt");
                 FILE *prevConfig = fopen(path, "w"); 
                 fprintf(prevConfig, "%s", Data);     // Fixed the syntax error here
@@ -148,27 +238,35 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
         }
     }
 }
-void GitInit (int mode , char *Data)
+void GitInit ()
 {
-    char *cwd;
-    char buffer[4096];
-    cwd = getcwd (buffer , 4096);
+char *cwd = CurrentWorkingDirectory();
 if (CheckInit(cwd) != NULL)
 {
-    puts("This is already a  babygit repository :)");
-    return;
+            puts("repository reinitialized");
+            system("rm -r ,babygit");
 }
-else
-{
-    mkdir(".babygit" , 0777);
-    //mkdir(".babygit/branch", 0777);
-    //mkdir(".babygit/branch/master", 0777);
+
+    mkdir(".babygit", 0777);
+    mkdir(".babygit/branch", 0777);
+    mkdir(".babygit/branch/master", 0777);
     mkdir(".babygit/commits", 0777);
     mkdir(".babygit/stage", 0777);
     fopen(".babygit/status.txt", "w");
-    fopen(".babygit/branch/master/reset.txt", "w");
+    fopen(".babygit/reset.txt", "w");
+    fopen(".babygit/add.txt", "w");
+    FILE *branch = fopen(".babygit/commits/branch.txt", "w");
+    FILE *previd = fopen(".babygit/commits/previd.txt", "w");
+    FILE *last_id = fopen(".babygit/commits/last_id.txt", "w");
+    FILE *log = fopen(".babygit/commits/log.txt", "w");
+    FILE *prevbranch = fopen(".babygit/commits/prevbranch.txt", "w");
+    FILE *list = fopen(".babygit/branch/master/list.txt", "w");
+    fprintf(branch, "master");
+    fprintf(prevbranch, "master");
+    fprintf(previd, "0");
+    fprintf(last_id, "-1");
     return;
-}
+
 }
 void GitAdd(int mode , char *Data)
 {
@@ -758,11 +856,11 @@ int main(int argc, char *argv[])
                 }
             if(!strcmp(argv[2] , "--global"))
                 {
-                    if(!strcmp(argv[3] , "username"))
+                    if(!strcmp(argv[3] , "user.name"))
                         {
                             CreatConfig(1 , argv[3] , argv[4]);
                         }
-                    else if(!strcmp(argv[2] , "useremail"))
+                    else if(!strcmp(argv[2] , "user.email"))
                         {
                              CreatConfig(1 , argv[3] , argv[4]);
                         }
@@ -775,11 +873,11 @@ int main(int argc, char *argv[])
     
             else
                 {
-                    if (!strcmp(argv[2] , "username"))
+                    if (!strcmp(argv[2] , "user.name"))
                         {
                             CreatConfig(0 , argv[2] , argv[3]);
                         }
-                    else if (!strcmp(argv[2] , "useremail"))
+                    else if (!strcmp(argv[2] , "user.email"))
                         {
                             CreatConfig(0 , argv[2] , argv[3]);
                         }
@@ -802,7 +900,7 @@ int main(int argc, char *argv[])
             puts("hey you ! enter your command correctly");
             return 0;
         }
-        init();
+        GitInit();
         return 0;
     }
     else
@@ -854,22 +952,22 @@ int main(int argc, char *argv[])
                     {
                         // delete from stage folder
                         char *path = malloc(4096);
-                        path = FindPath(argv[2]);
+                        path = FindCWD(argv[2]);
                         char *rm_path = malloc(4096);
                         sprintf(rm_path, "rm -r %s/.babygit/stage%s", Repository, path);
                         system(rm_path);
                     }
                     char TempPath[4096];
                     strcpy(TempPath, argv[i]);
-                    char *x = changedir(argv[i]);
+                    char *x = ChangeDir(argv[i]);
                     char *newcwd = CurrentWorkingDirectory();
                     if (strcmp(Repository, newcwd))
                     {
                         char *path = malloc(4096);
-                        path = FindPath(argv[2]);
+                        path = FindCWD(argv[2]);
                         StageFolder(path);
                     }
-                    add(FileDir(x), changedir(x));
+                    GitAdd(FileDir(x), ChangeDir(x));
                     fprintf(AddFile, "%s ", TempPath);
                     chdir(cwd);
                 }
@@ -888,23 +986,21 @@ int main(int argc, char *argv[])
                     {
                         // delete from stage folder
                         char *path = malloc(4096);
-                        path = FindPath(argv[2]);
+                        path = FindCWD(argv[2]);
                         char *rm_path = malloc(4096);
                         sprintf(rm_path, "rm -r %s/.babygit/stage%s", Repository, path);
                         system(rm_path);
                     }
-                    char *x = changedir(argv[i]);
-                    char *newcwd = malloc(4096);
-                    char buffer[4096];
-                    newcwd = getcwd(buffer, 4096);
+                    char *x = ChangeDir(argv[i]);
+                    char *newcwd = CurrentWorkingDirectory();
                     if (strcmp(Repository, newcwd))
                     {
                         char *path = malloc(4096);
-                        path = FindPath(argv[2]);
+                        path = FindCWD(argv[2]);
                         StageFolder(path);
                     }
                     fprintf(AddFile, "%s ", TempPath);
-                    add(FileDir(x), x);
+                    GitAdd(FileDir(x), x);
                     chdir(cwd);
                 }
                 fprintf(AddFile, "\n");
@@ -923,7 +1019,7 @@ int main(int argc, char *argv[])
             }
             if (!strcmp(argv[2], "-undo"))
             {
-                undo();
+                undo(); //not made
             }
             else if (!strcmp(argv[2], "-f"))
             {
@@ -931,7 +1027,7 @@ int main(int argc, char *argv[])
                 {
                     char TempPath[4096];
                     strcpy(TempPath, argv[i]);
-                    char *x = changedir(argv[i]);
+                    char *x = ChangeDir(argv[i]);
                     char *newcwd = malloc(4096);
                     char buffer[4096];
                     newcwd = getcwd(buffer, 4096);
@@ -943,7 +1039,7 @@ int main(int argc, char *argv[])
                         continue;
                     }
                     fprintf(resetfile, "%s ", TempPath);
-                    reset(FileDir(x), x);
+                    Reset(FileDir(x), x);
                     chdir(cwd);
                 }
                 fprintf(resetfile, "\n");
@@ -955,7 +1051,7 @@ int main(int argc, char *argv[])
                 {
                     char TempPath[4096];
                     strcpy(TempPath, argv[i]);
-                    char *x = changedir(argv[i]);
+                    char *x = ChangeDir(argv[i]);
                     char *newcwd = malloc(4096);
                     char buffer[4096];
                     newcwd = getcwd(buffer, 4096);
@@ -988,7 +1084,7 @@ int main(int argc, char *argv[])
                     puts("commit message must be less than 72 characters");
                     return 0;
                 }
-                commit(argc, argv);
+                PerformCommit(argc, argv);
             }
             else
             {
@@ -998,15 +1094,15 @@ int main(int argc, char *argv[])
         }
         else if (!strcmp(argv[1], "log"))
         {
-            logg(argc, argv);
+            DisplayCommit(argc, argv); //log
         }
         else if (!strcmp(argv[1], "checkout"))
         {
-            checkout(argc, argv);
+            CheckOut(argc, argv);
         }
         else if (!strcmp(argv[1], "branch"))
         {
-            branch(argc, argv); //lilil
+            Branch(argc, argv); //lilil
         }
         else
         {
