@@ -8,7 +8,8 @@
 #include <sys/types.h>
 #define True 1
 #define Zero 0
-//Getparrent
+
+void GetParent(char *path);
 char *CheckInit(char *path);
 int CheckSage(char *Path);
 int FileDir(char *path);
@@ -29,7 +30,12 @@ void DisplayCommit(int argc , char **argv);
 
 
 
-
+void GetParent(char *path)
+{
+    char *loc = strrchr(path, '/');
+    *loc = '\0';
+    return;
+}
 char *CheckInit(char *path)
 {
     DIR *dir = opendir(path);
@@ -865,7 +871,7 @@ void DisplayCommit(int argc , char **argv)
         printf ("File Count :) %d/n" , CommitInfoArray[j].FileCount);
         }
     }
-   else if(argc == 4 && !strcmp(argv[2] , '-n')) 
+   else if(argc == 4 && !strcmp(argv[2] , "-n")) 
    {
     char CommitLog[1024][4096];
     FILE *LogFile = fopen(LogFilePath , "r");
