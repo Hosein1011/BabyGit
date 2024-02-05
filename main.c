@@ -11,7 +11,7 @@
 
 void GetParent(char *path);
 char *CheckInit(char *path);
-int CheckSage(char *Path);
+int CheckStage(char *Path);
 int FileDir(char *path);
 int FileCounter ( char * Path);
 char  *CurrentWorkingDirectory();
