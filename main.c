@@ -55,7 +55,7 @@ char *CheckInit(char *path)
         return NULL;
     }
 }
-int CheckSage(char *Path)
+int CheckStage(char *Path)
 {
     char *StatusPath = malloc(4096);
     char *cwd = malloc(4096);
@@ -71,10 +71,10 @@ int CheckSage(char *Path)
     DIR *Direction = opendir(FolderPath);
     while ((fgets(Line , 4096 , StatusPath)) != NULL)
     {
-        Line[strlen(Line) -1] = '/0';
+        Line[strlen(Line) -1] = '\0';
         if (!strncmp( Line , Path , strlen(Path)))
         {
-            Line[strlen(Line)] = '/n';
+            Line[strlen(Line)] = '\n';
             return 1;
         }
 
@@ -146,13 +146,42 @@ char * FindCWD( char * Data)
     sprintf(fcwd , "%s%s" , fcwd , Data);//
     return fcwd ;
 }
+//int copyFile(char *sourcePath, char *destinationPath)
+//{
+  ///  destinationPath = destinationPath + 1;
+    //FILE *sourceFile = fopen(sourcePath, "rb");
+    //if (sourceFile == NULL)
+    //{
+      //  printf("File does not exist\n");
+        //return -1;
+    // }
+    // chdir("/");
+    // chdir(destinationPath);
+    // FILE *destinationFile = fopen(destinationPath, "r");
+    // if (destinationFile != NULL)
+    // {
+    //     delete the file
+    //    char *rm_path = malloc(4096);
+    //     sprintf(rm_path, "rm %s", destinationPath);
+    //     system(rm_path);
+//     }
+//     destinationFile = fopen(destinationPath, "wb");
+//     char buffer[1024];
+//     size_t size;
+//     while ((size = fread(buffer, 1, 1024, sourceFile)) > 0)
+//     {
+//         fwrite(buffer, 1, size, destinationFile);
+//     }
+//     fclose(sourceFile);
+//     return 0;
+// }
 char *ChangeDir(char *path)
 {
     // take a directory and change directory to parent of it and tokenize the last part of path and return it
     char *LastSlash = strrchr(path, '/');
     if (LastSlash == NULL)
     {
-        return path;
+        return path; 
     }
     *LastSlash = '\0';
     char *Token = strtok(path, "/");
@@ -177,19 +206,19 @@ void StageFolder(char *path)
     chdir("./stage");
     while (token != NULL)
     {
-        mkdir(token);
+        mkdir(token , 0777);
         chdir(token);
         token = strtok(NULL, "/");
     }
     chdir(cwd);
 }
-void CreatConfig(int IsGlobal, char *mode, char *Data) {
+void CreatConfig(int IsGlobal, char *mode, char *Data) { //;)
     if (IsGlobal) 
     {
         char path[] = "/mnt/e/ffproject/.babygitconfig"; // path chi bashe ?
         DIR *Direction = opendir(path);
         if (Direction == NULL) { // Fixed the syntax error here
-            mkdir(path);     // sath dastresie error midad fix kardam
+            mkdir(path , 0777);     // sath dastresie error midad fix kardam
             if (strcmp(mode, "user.name") != 0) {
                 FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path eslah she
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
@@ -244,7 +273,7 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
         return;
     }
 }
-void GitInit ()
+void GitInit () //;)
 {
 char *cwd = CurrentWorkingDirectory();
 if (CheckInit(cwd) != NULL)
@@ -253,11 +282,11 @@ if (CheckInit(cwd) != NULL)
             system("rm -r .babygit");
 }
 
-    mkdir(".babygit");
-    mkdir(".babygit/branch");
-    mkdir(".babygit/branch/master");
-    mkdir(".babygit/commits");
-    mkdir(".babygit/stage");
+    mkdir(".babygit", 0777);
+    mkdir(".babygit/branch" , 0777);
+    mkdir(".babygit/branch/master" , 0777);
+    mkdir(".babygit/commits" , 0777);
+    mkdir(".babygit/stage" , 0777);
     fopen(".babygit/status.txt", "w");
     fopen(".babygit/reset.txt", "w");
     fopen(".babygit/add.txt", "w");
@@ -274,7 +303,7 @@ if (CheckInit(cwd) != NULL)
     return;
 
 }
-void GitAdd(int mode , char *Data)
+void GitAdd(int mode , char *Data) //;)
 {
     if (mode == -1) puts("This file or directory is invalid-_-"); return;
     char *cwd ;
@@ -336,7 +365,7 @@ else
     char FileNAme[4096];
     sprintf(FileNAme , "%s/%s" , cwd , Data);
     FILE *file = fopen(FileNAme , "r");
-    if ( file = NULL ) puts("can not finde the file"); return;
+    if ( file == NULL ) puts("can not finde the file"); return;
     char *path =(char *)malloc(4096);
     path = FindCWD(Data);
     char *Copydest = (char *)malloc(4096);
@@ -347,13 +376,13 @@ else
     FILE *stats = fopen(PathStats , "a");
     fprintf(stats , "%s/n" , PathABS);
     sprintf(Copydest , "%s/.babygit/stage%s" , Repository , path);
-    copyfile(FileNAme , Copydest); //benevis
+    (FileNAme , Copydest); //benevis
     fclose(file);
     fclose(stats);
 
 }
 }
-void redo()
+void redo() //;)
 {
     char *ResetFilePath = malloc(4096);
     char *cwd = CurrentWorkingDirectory();
@@ -379,40 +408,40 @@ void redo()
     ResetFile = fopen(ResetFilePath , "w");
     fclose(ResetFile);
 }
-void Reset( int mode , char *FileName)
+void Reset( int mode , char *FileName) //;)
 {
     //Remove file from stage
     char *cwd = CurrentWorkingDirectory();
     char *RepositoryPath = CheckInit(cwd);
-    if ( mode = Zero )
+    if ( mode == Zero )
     {
-        char *RemovePath = (char *)malloc(4096) ; char *FullPath = (char *)malloc(4096);
-        char *RelativePath = (char *)malloc(4096);
+        char *RemovePath = malloc(4096) ; char *FullPath = malloc(4096);
+        char *RelativePath = malloc(4096);
         sprintf(FullPath , "%s/%s" , cwd , FileName);
         strcpy(RelativePath , FullPath);
-        if(!ChekStage(FullPath)) //Check stage tarif nashode
+        if(!CheckStage(FullPath))
         {
             printf("%s is not staged |:/n" , FileName); return;
         }
         RelativePath += strlen(RepositoryPath); //Removing newline path
-        sprintf(RemovePath , "rm - %s/.babygit/stage%s" , RepositoryPath , RelativePath );
+        sprintf(RemovePath , "rm -r %s/.babygit/stage%s" , RepositoryPath , RelativePath );
         system(RemovePath);
-        char *StatusPath = (char *)malloc(4096);
+        char *StatusPath = malloc(4096);
         sprintf(StatusPath , "%s/.babygit/status.txt" , RepositoryPath);
         FILE *StatusFile = fopen(StatusPath , "r");
-        char *Line = (char *)malloc(4096);
+        char *Line = malloc(4096);
         char FileText[1024][4096]; int index = 0;
         while (fgets (Line , 4096 , StatusFile))
         {
             int length = strlen(Line) - 1;
-            Line[length] = '/0';
+            Line[length] = '\0';
             // Skip the line if it matches the removed file
             if (!strncmp(Line  ,FullPath, strlen(FullPath))) //lililili
             {
-            Line[strlen(Line)] = '/n';
+            Line[strlen(Line)] = '\n';
             continue;
             }
-            Line[strlen(Line)] = '/n';
+            Line[strlen(Line)] = '\n';
         fclose(StatusFile); StatusFile = fopen(StatusPath , "w");
             strcpy(FileText[index] , Line); index++;
         }
@@ -426,8 +455,8 @@ void Reset( int mode , char *FileName)
         }
         else
         {
-            char *RemovePath = (char *)malloc(4096);char *Fullpath = (char *)malloc(4096);
-            char *RelativePath = (char *)malloc(4096);
+            char *RemovePath = malloc(4096);char *Fullpath = malloc(4096);
+            char *RelativePath = malloc(4096);
             sprintf(Fullpath , "%s/%s" , cwd ,FileName);
             strcpy(RelativePath , Fullpath);
             if (!CheckSage(Fullpath))
@@ -444,10 +473,10 @@ void Reset( int mode , char *FileName)
             while (fgets(Line , 4096 , StatusFile))
             {
                 int length = strlen(Line) - 1;
-                Line[length] = '/0';
+                Line[length] = '\0';
                 if (!strcmp(Line , Fullpath))
                 {
-                    Line[length + 1] = "/n";
+                    Line[length + 1] = "\n";
                     continue;
                 }
                 Line[strlen(Line)] = '\n';
@@ -474,175 +503,327 @@ typedef struct
     int FileCount; 
     
 } CommitInfo;
-void PerformCommit(int argc , char **argv)
+void PerformCommit( int argc , char **argv)
 {
+    int mode;
     char *cwd = CurrentWorkingDirectory();
-    char *RepositoryPath 
-    = CheckInit(cwd);
-    char *UserFilePath = (char *)malloc(4096); char *EmailFilePath = (char *)malloc(4096);
-    sprintf(UserFilePath , "%s/.babygit/user.txt" , RepositoryPath)
-    ;
-    sprintf(EmailFilePath , "%s/.babygit/email.txt" , EmailFilePath);
-    FILE *UserFile = fopen(UserFilePath , "r"); FILE *EmailFile = fopen(EmailFilePath , "r");
-    if ( UserFile == NULL || EmailFile == NULL)
+    char *Repository = CheckInit(cwd);
+    chdir(Repository);
+    chdir(".babygit");
+    char user[] = "user.txt";
+    char email[] = "email.txt";
+    FILE *ModeFile = fopen("commits/mode.txt", "r");
+    if (ModeFile == NULL)
     {
-        //check global config (faghat bara khoda, kar mide fek konam)
-        char *GlobalUserFilePath = "/mnt/e/ffproject/.babygittconfig/user.txt";
-        char *GlobalEmailFilePath = "/mnt/e/ffproject/.babygitconfig/email.txt";
-        UserFile = fopen(GlobalUserFilePath , "r");
-        EmailFile = fopen(GlobalEmailFilePath , "r");
+        mode = 1;
+    }
+    else
+    {
+        mode = 0;
+    }
+    FILE *UserFile = fopen(user, "r");
+    FILE *EmailFile = fopen(email, "r");
+    if (UserFile == NULL || EmailFile == NULL)
+    {
+        // check global config
+        chdir("/");
+        chdir("/mnt/d/FOP.babygitconfig");
+        UserFile = fopen(user, "r");
+        EmailFile = fopen(email, "r");
+        chdir(cwd);
         if (UserFile == NULL || EmailFile == NULL)
         {
-            puts("what the hell are you doing ? set username and email first -_-");
+            puts("you must set user name and email before Commititting");
             return;
         }
-        //continue?
-        char *UserName = (char *)malloc(4096);
-        char *UserEmail = (char *)malloc(4096);
-        fgets(UserName , 4096 , UserFile) ; fgets(UserEmail , 4096 , EmailFile);
-        UserName[strlen(UserName) - 1] = '\0'; 
-        UserEmail[strlen(UserEmail) - 1] = '\0';
-        fclose(UserEmail); fclose(UserFile);
+    }
+    chdir(cwd);
+    char *UserName = malloc(4096);
+    char *UserEmail = malloc(4096);
+    fgets(UserName, 4096, UserFile);
+    fgets(UserEmail, 4096, EmailFile);
+    UserName[strlen(UserName)] = '\0';
+    UserEmail[strlen(UserEmail)] = '\0';
+    fclose(UserFile);
+    fclose(EmailFile);
 
-        char *BranchFilePath = mallo(4096);
-        sprintf(BranchFilePath , "%s/.babygit/commits/branch.txt" , RepositoryPath);
-        FILE *BranchFile =fopen(BranchFilePath , "r");
-        char *BranchName = malloc(4096);
-        fgets(BranchName , 4096 , BranchFile);
-        BranchName[strlen(BranchName) - 1] = '/0';
-        fclose(BranchFile);
+    // branch name get
+    char *BranchPath = malloc(4096);
+    sprintf(BranchPath, "%s/.babygit/commits/branch.txt", Repository);
+    FILE *branch_file = fopen(BranchPath, "r");
+    char *branch_name = malloc(4096);
+    fgets(branch_name, 4096, branch_file);
+    branch_name[strlen(branch_name)] = '\0';
+    fclose(branch_file);
 
-        char *IdFilePath = malloc(4096);
-        sprintf (IdFilePath , "%s/.babygit/commits/current-id.txt" , RepositoryPath );
-        FILE *IdFile = fopen(IdFilePath , "r");
-        char *CommitId = malloc(4096);
-        fgets(CommitId , 4096 , IdFile);
-        CommitId[strlen(CommitId) - 1] = "/0"; fclose(IdFile);
+    // Commitit id get
+    char *IdPath = malloc(4096);
+    sprintf(IdPath, "%s/.babygit/commits/last_id.txt", Repository);
+    FILE *IdFile = fopen(IdPath, "r");
+    char *id = malloc(4096);
+    fgets(id, 4096, IdFile);
+    id[strlen(id)] = '\0';
 
-        char *PrevIdFilePath = malloc(4096);
-        sprintf(PrevIdFilePath, "%s/.babygit/commits/prev-id.txt", RepositoryPath);
-        FILE *prevIdFile = fopen(PrevIdFilePath, "r");
-        char *prevCommitId = malloc(4096);
-        fgets(prevCommitId, 4096 , prevIdFile);
-        prevCommitId[strlen(prevCommitId) - 1] = '\0'; 
-        fclose(prevIdFile);
+    // Commitit prev get
+    char *PrevPath = malloc(4096);
+    sprintf(PrevPath, "%s/.babygit/commits/previd.txt", Repository);
+    FILE *PrevFile = fopen(PrevPath, "r");
+    char *prev = malloc(4096);
+    fgets(prev, 4096, PrevFile);
+    prev[strlen(prev)] = '\0';
 
-         char *StagePath = malloc(4096);
-        sprintf(StagePath, "%s/.babygit/stage", RepositoryPath);
-        int FileCount = FileCounter(StagePath); //not made yet
-        if(FileCount = 0) puts("there is nothing we can commit -_-"); return;
+    // file count get
+    char *StagePath = malloc(4096);
+    sprintf(StagePath, "%s/.babygit/stage", Repository);
+    int file_count = FileCounter(StagePath);
+    if (file_count == 0)
+    {
+        puts("nothing to Commitit");
+        return;
+    }
 
-        CommitInfo *CommitInfo = malloc(sizeof(CommitInfo));
-        CommitInfo->Id = atoi(CommitId) + 1;
-        CommitInfo->prev = atoi(prevCommitId);
-        CommitInfo->FileCount = FileCount; //add File counter function
-        strcpy(CommitInfo->Branch , BranchName);
-        strcpy(CommitInfo->Message , argv[3]); //nigakona error dared
-        strcpy(CommitInfo->Author , UserName);
-        strcpy(CommitInfo->AuthorEmail , UserEmail);
-        printf("[%d %s] %s\n", CommitInfo->Id, CommitInfo->Message, CommitInfo->Branch);
+    CommitInfo *Commit = malloc(sizeof(CommitInfo));
+    Commit->Id = atoi(id) + 1;
+    Commit->prev = atoi(prev);
+    Commit->FileCount = file_count; //FileCount
+    strcpy(Commit->Branch, branch_name);
+    strcpy(Commit->Message, argv[3]);
+    strcpy(Commit->Author, UserName);
+    strcpy(Commit->AuthorEmail, UserEmail);
+    printf("[%d %s] %s\n", Commit->Id, Commit->Message, Commit->Branch);
+    char *CommitPath = malloc(4096);
+    sprintf(CommitPath, "%s/.babygit/branch/%s/%d", Repository, Commit->Branch, Commit->Id);
+    mkdir(CommitPath, 0777);
+    char *CommitInfoPath = malloc(4096);
 
-        char *CommitPath = malloc(4096);
-        sprintf(CommitPath , "%s/.babygit/branch/%s/%d" , RepositoryPath , CommitInfo->Branch);
-        mkdir(CommitPath );
-
-        char *CommitInfoPath = malloc(4096);
-        if (CommitInfo->Id == 0)
+    // copy all from stage to CommitPath
+    if (Commit->Id == 0)
+    {
+        char *StagePath = malloc(4096);
+        sprintf(StagePath, "%s/.babygit/stage", Repository);
+        char *cp_Commitad = malloc(4096);
+        DIR *dir = opendir(StagePath);
+        struct dirent *fp;
+        dir = opendir(StagePath);
+        while ((fp = readdir(dir)) != NULL)
         {
-            char *StagePath = malloc(4096);
-            sprintf(StagePath , "%s/.babygit/stage" , RepositoryPath);
-            DIR *Direction = opendir(StagePath);
-            struct dirent *entry;
-            while( (entry = readdir(Direction)) != NULL)
-            {
-                if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, ".babygit") == 0) 
+            if (strcmp(fp->d_name, ".") == 0 || strcmp(fp->d_name, "..") == 0 || strcmp(fp->d_name, ".babygit") == 0)
             {
                 continue;
             }
-            char *Path = malloc(4096);
-            sprintf(Path, "%s/%s", StagePath, entry->d_name);
-
-            char *cpCommand = malloc(4096); 
-             if (entry->d_type == DT_DIR)
+            if (fp->d_type == DT_DIR)
             {
-                sprintf(cpCommand, "cp -r %s %s", Path, CommitPath);
-            } 
-            else if (entry->d_type == DT_REG) 
+                char *path = malloc(4096);
+                sprintf(path, "%s/%s", StagePath, fp->d_name);
+                char *cp_Commitad = malloc(4096);
+                sprintf(cp_Commitad, "cp -r %s %s", path, CommitPath);
+                system(cp_Commitad);
+            }
+            else if (fp->d_type == DT_REG)
             {
-                sprintf(cpCommand, "cp %s %s", Path, CommitPath);
+                char *path = malloc(4096);
+                sprintf(path, "%s/%s", StagePath, fp->d_name);
+                char *cp_Commitad = malloc(4096);
+                sprintf(cp_Commitad, "cp %s %s", path, CommitPath);
+                system(cp_Commitad);
             }
-            system(cpCommand);
-            }
-        closedir(Direction);
         }
+    }
     else
     {
-        char *PrevCommitPath ;
-        sprintf(PrevCommitPath ,"%s/.babygit/branch/%s/%d" , RepositoryPath , CommitInfo->Branch , CommitInfo->prev);
-        DIR *prevDir = opendir(PrevCommitPath);
-        struct dirent *entryPrev;
-        while ((entryPrev = readdir(prevDir)) != NULL)
+        if (mode == 1)
         {
-        if (strcmp(entryPrev->d_name, ".") == 0 || strcmp(entryPrev->d_name, "..") == 0 || strcmp(entryPrev->d_name, ".babygit") == 0)
+            // check if list.txt has any Commitit inside if not read prev Commitit from head.txt
+            char *ListPath = malloc(4096);
+            sprintf(ListPath, "%s/.babygit/branch/%s/list.txt", Repository, Commit->Branch);
+            FILE *list_file = fopen(ListPath, "r");
+            char *line = malloc(4096);
+            char *PrevPath = malloc(4096);
+            int i = 0;
+            while (fgets(line, 4096, list_file) != NULL)
+            {
+                i++;
+            }
+            fclose(list_file);
+            char *PrevBranchPath = malloc(4096);
+            int PrevPath;
+            if (i == 0)
+            {
+                sprintf(PrevBranchPath, "%s/.babygit/branch/%s/head.txt", Repository, Commit->Branch);
+                FILE *PrevBranchFile = fopen(PrevBranchPath, "r");
+                char *line = malloc(4096);
+                fgets(line, 4096, PrevBranchFile);
+                PrevPath = atoi(line);
+                fgets(line, 4096, PrevBranchFile);
+                strcpy(PrevPath, line);
+                fclose(PrevBranchFile);
+            }
+            else
+            {
+                PrevPath = atoi(line);
+                strcpy(PrevPath, Commit->Branch);
+            }
+
+            char *PrevCommitPath = malloc(4096);
+            sprintf(PrevCommitPath, "%s/.babygit/branch/%s/%d", Repository, PrevPath, PrevPath);
+            char *cp_Commitad = malloc(4096);
+            // copy all from PrevCommitPath to CommitPath
+            DIR *dir = opendir(PrevCommitPath);
+            struct dirent *fp;
+            dir = opendir(PrevCommitPath);
+            while ((fp = readdir(dir)) != NULL)
+            {
+                if (strcmp(fp->d_name, ".") == 0 || strcmp(fp->d_name, "..") == 0 || strcmp(fp->d_name, ".babygit") == 0)
+                {
+                    continue;
+                }
+                if (fp->d_type == DT_DIR)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", PrevCommitPath, fp->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp -r %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+                else if (fp->d_type == DT_REG)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", PrevCommitPath, fp->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+            }
+            // copy all from stage to CommitPath
+            char *StagePath = malloc(4096);
+            sprintf(StagePath, "%s/.babygit/stage", Repository);
+            char *cp_Commitad2 = malloc(4096);
+            DIR *dir2 = opendir(StagePath);
+            struct dirent *fp2;
+            dir2 = opendir(StagePath);
+            while ((fp2 = readdir(dir2)) != NULL)
+            {
+                if (strcmp(fp2->d_name, ".") == 0 || strcmp(fp2->d_name, "..") == 0 || strcmp(fp2->d_name, ".babygit") == 0)
+                {
+                    continue;
+                }
+                if (fp2->d_type == DT_DIR)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", StagePath, fp2->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp -r %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+                else if (fp2->d_type == DT_REG)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", StagePath, fp2->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+            }
+        }
+        else
         {
-            continue;
+            // copy all files from cwd into CommitPath
+            DIR *dir = opendir(Repository);
+            struct dirent *fp;
+            while ((fp = readdir(dir)) != NULL)
+            {
+                if (strcmp(fp->d_name, ".") == 0 || strcmp(fp->d_name, "..") == 0 || strcmp(fp->d_name, ".babygit") == 0)
+                {
+                    continue;
+                }
+                if (fp->d_type == DT_DIR)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", Repository, fp->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp -r %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+                else if (fp->d_type == DT_REG)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", Repository, fp->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+            }
+            // copy all files from stage into CommitPath
+            char *StagePath = malloc(4096);
+            sprintf(StagePath, "%s/.babygit/stage", Repository);
+            DIR *dir2 = opendir(StagePath);
+            struct dirent *fp2;
+            while ((fp2 = readdir(dir2)) != NULL)
+            {
+                if (strcmp(fp2->d_name, ".") == 0 || strcmp(fp2->d_name, "..") == 0 || strcmp(fp2->d_name, ".babygit") == 0)
+                {
+                    continue;
+                }
+                if (fp2->d_type == DT_DIR)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", StagePath, fp2->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp -r %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+                else if (fp2->d_type == DT_REG)
+                {
+                    char *path = malloc(4096);
+                    sprintf(path, "%s/%s", StagePath, fp2->d_name);
+                    char *cp_Commitad = malloc(4096);
+                    sprintf(cp_Commitad, "cp %s %s", path, CommitPath);
+                    system(cp_Commitad);
+                }
+            }
         }
-        if(entryPrev->d_type == DT_DIR)
-        {
-            char *PathPrev = malloc(4096);
-            sprintf(PathPrev , "%s/%s" , PrevCommitPath , entryPrev->d_name);
-            char *cpCommandPrev = malloc(4096);
-            sprintf(cpCommandPrev , "cp -r %s %s" , PathPrev , CommitPath);
-            system(cpCommandPrev); //hala halat badi
-        }
-        else if (entryPrev->d_type == DT_REG)
-        {
-            char *PathPrev = malloc(4096);
-            sprintf(PathPrev , "%s/%s" , PrevCommitPath , entryPrev->d_name);
-            char *cpCommandPrev = malloc(4096);
-            sprintf(cpCommandPrev , "cp %s %s" , PathPrev , CommitPath);
-            system(cpCommandPrev);
-        }
-        }
-    closedir(prevDir);
     }
 
-    char *LogPath = malloc(4096);
-    sprintf(LogPath , "%s/.babygit/commits/log.txt" , RepositoryPath);
-    FILE *LogFile = fopen(LogPath , "a");
-    fprintf(LogFile , "%s/n" , CommitInfo->Author);
-    fprintf(LogFile, "%d\n\"%s\"\n%s\n%d\n", CommitInfo->Id, CommitInfo->Message, CommitInfo->Branch, CommitInfo->FileCount); 
-    //add time element if you want
-    fclose(LogFile);
+    // update branch head
+    char *ListPath = malloc(4096);
+    sprintf(ListPath, "%s/.babygit/branch/%s/list.txt", Repository, Commit->Branch);
+    FILE *list_file = fopen(ListPath, "a");
+    fprintf(list_file, "%d\n", Commit->Id);
+    fclose(list_file);
 
-    FILE *PrevFile2 = fopen(PrevIdFilePath , "w");
-    fprintf(PrevFile2 , "%d" , CommitInfo->Id);
-    fclpse(PrevFile2);
+    // update text files like id last id and log
+    char *log_path = malloc(4096);
+    sprintf(log_path, "%s/.babygit/commits/log.txt", Repository);
+    FILE *log_file = fopen(log_path, "a");
+    fprintf(log_file, "%s\n", Commit->Author);
+    fprintf(log_file, "%d\n\"%s\"\n%s\n%d\n", Commit->Id, Commit->Message, Commit->Branch, Commit->FileCount);//FileCounter
+    fclose(log_file);
+    FILE *PrevFile2 = fopen(PrevPath, "w");
+    fprintf(PrevFile2, "%d", Commit->Id);
+    fclose(PrevFile2);
+    IdFile = fopen(IdPath, "w");
+    fprintf(IdFile, "%d", Commit->Id);
+    fclose(IdFile);
+    PrevFile = fopen(PrevPath, "w");
+    fprintf(PrevFile, "%d", Commit->Id);
+    fclose(PrevFile);
 
-    IdFile = fopen(IdFilePath , "w" );
-    fprintf(IdFile , CommitInfo->Id);
-    flose(IdFile);
+    // Commitit info creation
+    sprintf(CommitInfoPath, "%s/.babygit/branch/%s/info%d.txt", Repository, Commit->Branch, Commit->Id);
+    FILE *CommitInfoFile = fopen(CommitInfoPath, "w");
+    fprintf(CommitInfoFile, "%s\n", Commit->Author);
+    fprintf(CommitInfoFile, "%d\n%s\n%s\n%d\n", Commit->Id, Commit->Message, Commit->Branch, Commit->FileCount);//FileCount
 
-    prevIdFile = fopen(prevIdFile, "w");  //Repository path ro mitoni bara fahm behtar eslah koni
-    fprintf( prevIdFile , "%d", CommitInfo->Id);
-    fclose(prevIdFile);
-
-    sprintf( CommitInfoPath , "%s/.babygit/branch/%s/info%d.txt" , RepositoryPath , CommitInfo->Branch , CommitInfo->Id);
-    FILE *CommitInfoFile = fopen(CommitInfoPath , "w");
-    fprintf(CommitInfoFile , "%s/n" , CommitInfoPath);
-    fprintf(CommitInfoFile, "%d\n%s\n%s\n%d\n", CommitInfo->Id, CommitInfo->Message, CommitInfo->Branch, CommitInfo->FileCount);
-    fclose(CommitInfoFile);
-
-    chdir(RepositoryPath);
+    chdir(Repository);
     chdir(".babygit");
     system("rm -r stage");
-    mkdir("stage" );
+    mkdir("stage", 0777);
     system("rm status.txt && touch status.txt");
     system("rm add.txt && touch add.txt");
     system("rm reset.txt && touch reset.txt");
     return;
 }
-}
+
 void DisplayCommit(int argc , char **argv)
 {
     char *cwd = CurrentWorkingDirectory();
@@ -920,16 +1101,7 @@ int main(int argc, char *argv[])
             {
                 redo();
             }
-            else if (!strcmp(argv[2], "-n"))
-            {
-                if (argc <= 3)
-                {
-                    puts("hey you ! enter your command correctly");
-                    return 0;           //add n not add yet
-                }
-                int a = atoi(argv[3]);
-                addn(a);
-            }
+
             else if (!strcmp(argv[2], "-f"))
             {
                 if (argc <= 3)
@@ -1011,10 +1183,10 @@ int main(int argc, char *argv[])
                 puts("hey you ! enter your command correctly");
                 return 0;
             }
-            if (!strcmp(argv[2], "-undo"))
-            {
-                undo(); //not made
-            }
+           // if (!strcmp(argv[2], "-undo"))
+            // {
+            //     undo(); //not made
+            // }
             else if (!strcmp(argv[2], "-f"))
             {
                 for (int i = 3; i < argc; i++)
@@ -1057,7 +1229,7 @@ int main(int argc, char *argv[])
                         continue;
                     }
                     fprintf(resetfile, "%s ", TempPath);
-                    reset(FileDir(x), x);
+                    Reset(FileDir(x), x);
                     chdir(cwd);
                 }
                 fprintf(resetfile, "\n");
@@ -1089,14 +1261,6 @@ int main(int argc, char *argv[])
         else if (!strcmp(argv[1], "log"))
         {
             DisplayCommit(argc, argv); //log
-        }
-        else if (!strcmp(argv[1], "checkout"))
-        {
-            CheckOut(argc, argv);
-        }
-        else if (!strcmp(argv[1], "branch"))
-        {
-            Branch(argc, argv); //lilil
         }
         else
         {
