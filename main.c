@@ -177,7 +177,7 @@ void StageFolder(char *path)
     chdir("./stage");
     while (token != NULL)
     {
-        mkdir(token, 0777);
+        mkdir(token);
         chdir(token);
         token = strtok(NULL, "/");
     }
@@ -186,10 +186,10 @@ void StageFolder(char *path)
 void CreatConfig(int IsGlobal, char *mode, char *Data) {
     if (IsGlobal) 
     {
-        char path[] = "/mnt/e/ffproject/.babyfitconfig"; // path chi bashe ?
+        char path[] = "/mnt/e/ffproject/.babygitconfig"; // path chi bashe ?
         DIR *Direction = opendir(path);
         if (Direction == NULL) { // Fixed the syntax error here
-            mkdir(path, 0777);     // sath dastresie error midad fix kardam
+            mkdir(path);     // sath dastresie error midad fix kardam
             if (strcmp(mode, "user.name") != 0) {
                 FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path eslah she
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
@@ -218,13 +218,13 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
         char *cwd;
         char buffer[4096];
         cwd = getcwd(buffer, 4096);
-        char *path = (char *)malloc(strlen(cwd) + strlen("/.babygit") + 1);  // Allocate enough memory
+        char *path = malloc(4096);  // Allocate enough memory
         strcpy(path, cwd);
         path = CheckInit(cwd);
 
         if (path == NULL) {  // Fixed the syntax error here
             strcat(path, "/.babygit");
-            if (strcmp(mode, "username") != 0) 
+            if (strcmp(mode, "user.name") != 0) 
             {
                 strcat(path, "/username.txt");
                 FILE *prevConfig = fopen(path, "w");  
@@ -241,6 +241,7 @@ void CreatConfig(int IsGlobal, char *mode, char *Data) {
         } else {
             puts("This is not babygit's repository");
         }
+        return;
     }
 }
 void GitInit ()
@@ -249,14 +250,14 @@ char *cwd = CurrentWorkingDirectory();
 if (CheckInit(cwd) != NULL)
 {
             puts("repository reinitialized");
-            system("rm -r ,babygit");
+            system("rm -r .babygit");
 }
 
-    mkdir(".babygit", 0777);
-    mkdir(".babygit/branch", 0777);
-    mkdir(".babygit/branch/master", 0777);
-    mkdir(".babygit/commits", 0777);
-    mkdir(".babygit/stage", 0777);
+    mkdir(".babygit");
+    mkdir(".babygit/branch");
+    mkdir(".babygit/branch/master");
+    mkdir(".babygit/commits");
+    mkdir(".babygit/stage");
     fopen(".babygit/status.txt", "w");
     fopen(".babygit/reset.txt", "w");
     fopen(".babygit/add.txt", "w");
@@ -275,22 +276,22 @@ if (CheckInit(cwd) != NULL)
 }
 void GitAdd(int mode , char *Data)
 {
-    if (mode == -1) puts("This file or directory is invalid"); return;
+    if (mode == -1) puts("This file or directory is invalid-_-"); return;
     char *cwd ;
     char buffer[4096];
     cwd = getcwd (buffer , 4096);
     char *Repository = CheckInit (cwd);
-    char *PathStats = (char *)malloc(4096);
-    sprintf(PathStats , "%s/.babygit/status.txt" , Repository); //status.txt?why
-    if (mode == Zero) //masir nadarim bayad ijad she
+    char *PathStats = malloc(4096);
+    sprintf(PathStats , "%s/.babygit/status.txt" , Repository); 
+    if (mode == Zero) 
     {
-        char *NewPath = (char *)malloc(4096);
+        char *NewPath = malloc(4096);
         NewPath = FindCWD(Data);
-        if (NewPath[0] == "/") NewPath += 1;
-        chdir("/"); chdir(Repository); //chdir(".babygit/stage")
-        mkdir(NewPath , 0777); chdir(cwd);
+        if (NewPath[0] == '/') NewPath += 1;
+        chdir("/"); chdir(Repository); chdir(".babygit/stage");
+        mkdir(NewPath , 0777 ); chdir(cwd);
         struct dirent *fp ;
-        char *path = (char *)malloc(4096);
+        char *path = malloc(4096);
         path = FindCWD(Data);
         DIR *direction = opendir(Data);
         if (direction == NULL) puts("directory not found :("); return;
@@ -306,7 +307,7 @@ void GitAdd(int mode , char *Data)
                     sprintf(path , "%s/%s" , cwd , Data);
                     chdir("/");
                 chdir(path);
-                add(Zero, fp->d_name);
+                GitAdd(Zero, fp->d_name); ///nn
                 chdir(cwd);
                 }
                 else if (fp->d_type == DT_REG)
@@ -315,17 +316,17 @@ void GitAdd(int mode , char *Data)
                 sprintf(path, "%s/%s", cwd, Data);
                 chdir("/");
                 chdir(path);
-                add(True, fp->d_name); //check beshe
+                GitAdd(True, fp->d_name); //check beshe/////////////////
                 chdir(cwd);
             }
             else
             {
-                printf("%s pleas enter a valid type :(\n", fp->d_name); //chera puts nis?
+                printf("%s pleas enter a valid type :(\n", fp->d_name); 
             }
         }
                 char abs_path[4096];
         sprintf(abs_path, "%s/%s", cwd, Data);
-        FILE *status = fopen(PathStats, "a"); //txt?
+        FILE *status = fopen(PathStats, "a"); 
         fprintf(status, "%s\n", abs_path);
         fclose(status);
         return;
@@ -333,7 +334,7 @@ void GitAdd(int mode , char *Data)
 else
 {
     char FileNAme[4096];
-    sprintf(FileNAme , "%s%s" , cwd , Data);
+    sprintf(FileNAme , "%s/%s" , cwd , Data);
     FILE *file = fopen(FileNAme , "r");
     if ( file = NULL ) puts("can not finde the file"); return;
     char *path =(char *)malloc(4096);
@@ -341,23 +342,12 @@ else
     char *Copydest = (char *)malloc(4096);
     char PathStats[4096];
     char PathABS[4096];
-    sprintf(PathABS , "%s%s" , cwd , Data);
+    sprintf(PathABS , "%s/%s" , cwd , Data);
     sprintf(PathStats , "%s/.babygit/status.txt" , Repository);
     FILE *stats = fopen(PathStats , "a");
     fprintf(stats , "%s/n" , PathABS);
     sprintf(Copydest , "%s/.babygit/stage%s" , Repository , path);
-    //copyfile(FileNAme , Copydest);
-    Copydest = Copydest + 1 ;
-    FILE *sourcefile = fopen("FileNAme.txt" , "rb");
-    if (sourcefile == NULL) puts("right now your file does not exist :("); return -1; //or -1
-    chdir("/"); chdir("copydest");
-    FILE *Copydest = fopen("Copydest" ,  "wb");
-    char buffer[1024]; size_t size;
-    while ((size = fread(buffer , 1 , size , FileNAme)) > 0 )
-    {
-        fwrite(buffer , 1 , size , Copydest);
-    }
-    fclose(Copydest);
+    copyfile(FileNAme , Copydest); //benevis
     fclose(file);
     fclose(stats);
 
@@ -365,27 +355,27 @@ else
 }
 void redo()
 {
-    char *ResetFilePath = (char *)malloc(4096);
+    char *ResetFilePath = malloc(4096);
     char *cwd = CurrentWorkingDirectory();
     char *Repository = CheckInit(cwd);
     sprintf(ResetFilePath , "%s/.babygit/reset.txt" , Repository);
-    FILE *ResetFile = fopen(ResetFilePath , "w");
-    char *line = (char *)malloc(4096) ; char FileText[1024][4096];
+    FILE *ResetFile = fopen(ResetFilePath , "r");
+    char *line = malloc(4096) ; char FileText[1024][4096];
     int count = 0;
     while (fgets(line , 4096 , ResetFile) != NULL)
     {
         int length = strlen(line) - 1 ; 
-        line[length] = '/0';
-        strcpy( FileText ,line );
+        line[length] = '\0';
+        strcpy( FileText[count] ,line );
         count += 1;
     }
-    for( int k = count ; k >= 1 ; k--)
+    for( int k = count -1 ; k >= 0 ; k--)
     {
-        char *Command = (char *)malloc(4096);
+        char *Command = malloc(4096);
         sprintf(Command , "babygit add %s" , FileText[k]);
-        system(Command);
+        system(Command); //?
     }
-   fclose(ResetFile); //check beshe
+   fclose(ResetFile); 
     ResetFile = fopen(ResetFilePath , "w");
     fclose(ResetFile);
 }
@@ -554,7 +544,7 @@ void PerformCommit(int argc , char **argv)
 
         char *CommitPath = malloc(4096);
         sprintf(CommitPath , "%s/.babygit/branch/%s/%d" , RepositoryPath , CommitInfo->Branch);
-        mkdir(CommitPath , 0777);
+        mkdir(CommitPath );
 
         char *CommitInfoPath = malloc(4096);
         if (CommitInfo->Id == 0)
@@ -646,7 +636,7 @@ void PerformCommit(int argc , char **argv)
     chdir(RepositoryPath);
     chdir(".babygit");
     system("rm -r stage");
-    mkdir("stage" , 0777);
+    mkdir("stage" );
     system("rm status.txt && touch status.txt");
     system("rm add.txt && touch add.txt");
     system("rm reset.txt && touch reset.txt");
