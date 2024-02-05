@@ -69,7 +69,7 @@ int CheckStage(char *Path)
     Temp = Temp + strlen(Repository);
     sprintf(FolderPath , "%s/.babygit/stage%s" , Repository , Temp);
     DIR *Direction = opendir(FolderPath);
-    while ((fgets(Line , 4096 , StatusPath)) != NULL)
+    while ((fgets(Line , 4096 , StatusFile)) != NULL)
     {
         Line[strlen(Line) -1] = '\0';
         if (!strncmp( Line , Path , strlen(Path)))
@@ -408,7 +408,7 @@ void redo() //;)
     ResetFile = fopen(ResetFilePath , "w");
     fclose(ResetFile);
 }
-void Reset( int mode , char *FileName) //;)
+void Reset( int mode  , char *FileName) //;)
 {
     //Remove file from stage
     char *cwd = CurrentWorkingDirectory();
@@ -476,7 +476,7 @@ void Reset( int mode , char *FileName) //;)
                 Line[length] = '\0';
                 if (!strcmp(Line , Fullpath))
                 {
-                    Line[length + 1] = "\n";
+                    Line[length + 1] = '\n';
                     continue;
                 }
                 Line[strlen(Line)] = '\n';
@@ -638,7 +638,7 @@ void PerformCommit( int argc , char **argv)
             sprintf(ListPath, "%s/.babygit/branch/%s/list.txt", Repository, Commit->Branch);
             FILE *list_file = fopen(ListPath, "r");
             char *line = malloc(4096);
-            char *PrevPath = malloc(4096);
+            char *PrevPath = malloc(4096); //prevbranch
             int i = 0;
             while (fgets(line, 4096, list_file) != NULL)
             {
@@ -646,26 +646,26 @@ void PerformCommit( int argc , char **argv)
             }
             fclose(list_file);
             char *PrevBranchPath = malloc(4096);
-            int PrevPath;
+            int PrevId;
             if (i == 0)
             {
                 sprintf(PrevBranchPath, "%s/.babygit/branch/%s/head.txt", Repository, Commit->Branch);
                 FILE *PrevBranchFile = fopen(PrevBranchPath, "r");
                 char *line = malloc(4096);
                 fgets(line, 4096, PrevBranchFile);
-                PrevPath = atoi(line);
+                PrevId = atoi(line);
                 fgets(line, 4096, PrevBranchFile);
                 strcpy(PrevPath, line);
                 fclose(PrevBranchFile);
             }
             else
             {
-                PrevPath = atoi(line);
+                PrevId = atoi(line);
                 strcpy(PrevPath, Commit->Branch);
             }
 
             char *PrevCommitPath = malloc(4096);
-            sprintf(PrevCommitPath, "%s/.babygit/branch/%s/%d", Repository, PrevPath, PrevPath);
+            sprintf(PrevCommitPath, "%s/.babygit/branch/%s/%d", Repository, PrevPath, PrevId);
             char *cp_Commitad = malloc(4096);
             // copy all from PrevCommitPath to CommitPath
             DIR *dir = opendir(PrevCommitPath);
@@ -836,7 +836,7 @@ void DisplayCommit(int argc , char **argv)
         FILE *LogFile = fopen(LogFilePath , "r");
         char *Line = malloc(4096);
         int CommitCount = 0;
-        while (fgets(Line , 4096 , LogFilePath) != NULL)
+        while (fgets(Line , 4096 , LogFile) != NULL)
         {
             strcpy(CommitLog[CommitCount] , Line );
             CommitCount++;
@@ -910,7 +910,7 @@ void DisplayCommit(int argc , char **argv)
     char *CurrentLine = malloc(4096);
     int NumberOfLines = 0;
     int n = atoi(argv[2]);
-    while ( (fgets (CurrentLine , 4096 , LogFilePath)) != 0)
+    while ( (fgets (CurrentLine , 4096 , LogFile)) != 0)
     {
     strcpy( CommitLog[NumberOfLines] , CurrentLine);
     NumberOfLines++;
@@ -1013,7 +1013,7 @@ void DisplayCommit(int argc , char **argv)
                 printf(" Commit /: id: %d\n", Commit[j].Id);
                 printf("message:| %s", Commit[j].Message);
                 printf("branch:) %s", Commit[j].Branch);
-                printf("file count): %d\n", Commit[j].Branch);
+                printf("file count): %s\n", Commit[j].Branch);
                 printf("\n");
             }
         }
