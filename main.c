@@ -221,26 +221,26 @@ void StageFolder(char *path)
 void CreatConfig(int IsGlobal, char *mode, char *Data) { //;)
     if (IsGlobal) 
     {
-        char path[] = "/mnt/e/ffproject/.babygitconfig"; // path chi bashe ?
+        char path[] = "/home/hosein/output/.babygitconfig"; 
         DIR *Direction = opendir(path);
         if (Direction == NULL) { // Fixed the syntax error here
             mkdir(path , 0777);     // sath dastresie error midad fix kardam
             if (strcmp(mode, "user.name") != 0) {
-                FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path eslah she
+                FILE *username = fopen("/home/hosein/output/.babygitconfig/username.txt", "w"); // path eslah she
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
                 fclose(username);
             } else {
-                FILE *email = fopen("/mnt/e/ffproject/.babygitconfig/email.txt", "w"); // path
+                FILE *email = fopen("/home/hosein/output/.babygitconfig/email.txt", "w"); // path
                 fprintf(email, "%s", Data);  // Fixed the syntax error here
                 fclose(email);
             }
         } else {
             if (strcmp(mode, "user.email") != 0) {
-                FILE *email = fopen("/mnt/e/ffproject/.babygitconfig/email.txt", "w"); // path
+                FILE *email = fopen("/home/hosein/output/.babygitconfig/email.txt", "w"); // path
                 fprintf(email, "%s", Data);  // Fixed the syntax error here
                 fclose(email);
             } else {
-                FILE *username = fopen("/mnt/e/ffproject/.babygitconfig/username.txt", "w"); // path
+                FILE *username = fopen("/home/hosein/output/.babygitconfig/username.txt", "w"); // path
                 fprintf(username, "%s", Data);  // Fixed the syntax error here
                 fclose(username);
             }
@@ -465,7 +465,7 @@ void Reset( int mode  , char *FileName) //;)
             char *RelativePath = malloc(4096);
             sprintf(Fullpath , "%s/%s" , cwd ,FileName);
             strcpy(RelativePath , Fullpath);
-            if (!CheckSage(Fullpath))
+            if (!CheckStage(Fullpath))
             {
                 printf("%s is not staged |:/n" , FileName); return;
             }
@@ -533,7 +533,7 @@ void PerformCommit( int argc , char **argv)
     {
         // check global config
         chdir("/");
-        chdir("/mnt/d/FOP.babygitconfig");
+        chdir("/home/hosein/output/.babygitconfig");
         UserFile = fopen(user, "r");
         EmailFile = fopen(email, "r");
         chdir(cwd);
@@ -835,7 +835,7 @@ void DisplayCommit(int argc , char **argv)
     char *cwd = CurrentWorkingDirectory();
     char *RepositoryPath = CheckInit(cwd);
     char *LogFilePath = malloc(4096); 
-    sprintf(LogFilePath , "%s/.babygit/ommits/log.txt" , RepositoryPath );
+    sprintf(LogFilePath , "%s/.babygit/commits/log.txt" , RepositoryPath );
     if (argc = 2)
     {
         char CommitLog[1024][4096];
@@ -852,7 +852,7 @@ void DisplayCommit(int argc , char **argv)
         for (int i = 0 ; i < CommitCount ; i++)
         {
             //i = log index
-            if ( i %  6 == 0)
+            if ( i %  5 == 0)
             {
                 strcpy(CommitInfoArray[CommitInfoIndex].Author, CommitLog[i]);
                 CommitInfoArray[CommitInfoIndex].Id = atoi(CommitLog[i + 1]);
@@ -862,7 +862,7 @@ void DisplayCommit(int argc , char **argv)
                 CommitInfoIndex++;
             }
         }
-        for (int j = CommitInfoIndex - 1 ; CommitInfoIndex >= 0 ; j--)
+        for (int j = CommitInfoIndex - 1 ;j >= 0 ; j--)
         {
         printf ("Author |: %s" , CommitInfoArray[j].Author);
         printf ("Commit ID :) %d/n" , CommitInfoArray[j].Id);
@@ -909,7 +909,7 @@ void DisplayCommit(int argc , char **argv)
 
     }
    }
-   else if(argc == 4 && !strcmp(argv[2] , "-branch") == 0)
+   else if(argc == 4 && !strcmp(argv[2] , "-branch") )
    {
     char CommitLog[1024][4096];
     FILE *LogFile = fopen(LogFilePath , "R");
@@ -1029,7 +1029,7 @@ void DisplayCommit(int argc , char **argv)
 
 int main(int argc, char *argv[]) 
 {  // Fixed the syntax error here
-    if (!strcmp(argv[1] , "config"))
+    if (strcmp(argv[1] , "config") != 0)
         {
         if (argc != 4 && argc != 5)                {
                     puts("what the hell are you doing ? enter a valid command");
