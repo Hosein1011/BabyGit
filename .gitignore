@@ -1,0 +1,10 @@
+# Build artifacts
+*.o
+*.a
+*.so
+main
+babygit
+
+# IDE configurations
+.vscode/
+.idea/
